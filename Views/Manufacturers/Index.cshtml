@@ -1,0 +1,566 @@
+@{
+    ViewData["Title"] = "Gestão de Fabricantes";
+}
+
+<div class="container-fluid">
+    <!-- Header da Página -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="fas fa-industry text-primary me-2"></i>
+                        Gestão de Fabricantes
+                    </h2>
+                    <p class="text-muted mb-0">Gerencie todos os fabricantes disponíveis no sistema</p>
+                </div>
+                <div>
+                    <a href="/Manufacturers/Create" class="btn btn-md btn-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        Novo Fabricante
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card de Estatísticas -->
+    <div class="row mb-4" id="statsCards">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0" id="totalManufacturers">0</h4>
+                            <small>Total de Fabricantes</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-industry fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0" id="activeManufacturers">0</h4>
+                            <small>Ativos</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0" id="countriesCount">0</h4>
+                            <small>Países</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-globe fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0" id="vehiclesCount">0</h4>
+                            <small>Veículos</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-car fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros de Busca -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <input type="text" id="searchInput" class="form-control"
+                        placeholder="Buscar por nome ou país..." />
+                </div>
+                <div class="col-md-3">
+                    <select id="countryFilter" class="form-select">
+                        <option value="">Todos os Países</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select id="statusFilter" class="form-select">
+                        <option value="">Todos os Status</option>
+                        <option value="true">Ativo</option>
+                        <option value="false">Inativo</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" id="clearFilters" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-times me-1"></i>Limpar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Fabricantes -->
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-list me-2"></i>
+                Lista de Fabricantes (<span id="resultsCount">0</span> resultado(s))
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <!-- Loading state -->
+            <div id="loadingIndicator" class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Carregando...</span>
+                </div>
+                <p class="mt-3 text-muted">Carregando fabricantes...</p>
+            </div>
+
+            <!-- Tabela -->
+            <div id="manufacturersTable" class="d-none">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="text-center" style="width: 80px;">ID</th>
+                                <th>Nome</th>
+                                <th>País</th>
+                                <th class="text-center">Ano Fundação</th>
+                                <th>Website</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-center" style="width: 200px;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="manufacturersTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Estado vazio -->
+            <div id="emptyState" class="text-center py-5 d-none">
+                <div class="mb-4">
+                    <i class="fas fa-industry fa-3x text-muted"></i>
+                </div>
+                <h4 class="text-muted">Nenhum fabricante encontrado</h4>
+                <p class="text-muted mb-4">Comece adicionando seu primeiro fabricante ao sistema.</p>
+                <a href="/Manufacturers/Create" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>
+                    Adicionar Primeiro Fabricante
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Confirmar Exclusão
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0 me-3">
+                        <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+                    </div>
+                    <div>
+                        <h6>Tem certeza que deseja excluir este fabricante?</h6>
+                        <p class="mb-0">
+                            O fabricante <strong id="manufacturerName"></strong> será excluído permanentemente.
+                            Esta ação não pode ser desfeita.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>
+                    Cancelar
+                </button>
+                <button type="button" id="confirmDelete" class="btn btn-danger">
+                    <i class="fas fa-trash me-2"></i>
+                    Excluir Fabricante
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let manufacturers = [];
+            let currentDeleteId = null;
+
+            // Elementos do DOM
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const manufacturersTable = document.getElementById('manufacturersTable');
+            const emptyState = document.getElementById('emptyState');
+            const manufacturersTableBody = document.getElementById('manufacturersTableBody');
+            const searchInput = document.getElementById('searchInput');
+            const countryFilter = document.getElementById('countryFilter');
+            const statusFilter = document.getElementById('statusFilter');
+            const clearFiltersBtn = document.getElementById('clearFilters');
+            const resultsCount = document.getElementById('resultsCount');
+
+            // Carregar dados iniciais
+            loadManufacturers()
+                .then(() => {
+                    renderManufacturersTable(manufacturers);
+                    updateStats();
+                    populateCountryFilter();
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar dados:', error);
+                    showError();
+                });
+
+            // Event listeners para filtros
+            searchInput.addEventListener('input', debounce(filterManufacturers, 300));
+            countryFilter.addEventListener('change', filterManufacturers);
+            statusFilter.addEventListener('change', filterManufacturers);
+            clearFiltersBtn.addEventListener('click', clearFilters);
+
+            // Função para carregar fabricantes
+            async function loadManufacturers() {
+                try {
+                    const response = await fetch('/api/manufacturers', {
+                        credentials: 'same-origin'
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Erro ao carregar fabricantes');
+                    }
+
+                    manufacturers = await response.json();
+                } catch (error) {
+                    console.error('Erro ao carregar fabricantes:', error);
+                    throw error;
+                }
+            }
+
+            // Função para popular o filtro de países
+            function populateCountryFilter() {
+                const countries = [...new Set(manufacturers.map(m => m.Country))].sort();
+                countryFilter.innerHTML = '<option value="">Todos os Países</option>';
+                countries.forEach(country => {
+                    const option = document.createElement('option');
+                    option.value = country;
+                    option.textContent = country;
+                    countryFilter.appendChild(option);
+                });
+            }
+
+            // Função para renderizar a tabela
+            function renderManufacturersTable(manufacturersToRender) {
+                loadingIndicator.classList.add('d-none');
+                
+                if (manufacturersToRender.length === 0) {
+                    manufacturersTable.classList.add('d-none');
+                    emptyState.classList.remove('d-none');
+                    resultsCount.textContent = '0';
+                    return;
+                }
+
+                emptyState.classList.add('d-none');
+                manufacturersTable.classList.remove('d-none');
+                resultsCount.textContent = manufacturersToRender.length;
+
+                manufacturersTableBody.innerHTML = manufacturersToRender.map(manufacturer => `
+                    <tr>
+                        <!-- ID -->
+                        <td class="text-center align-middle">
+                            <span class="badge bg-secondary">#${manufacturer.Id}</span>
+                        </td>
+
+                        <!-- Nome -->
+                        <td class="align-middle">
+                            <div>
+                                <h6 class="mb-1 fw-semibold">${manufacturer.Name}</h6>
+                                <small class="text-muted">Fundado em ${manufacturer.FoundedYear}</small>
+                            </div>
+                        </td>
+
+                        <!-- País -->
+                        <td class="align-middle">
+                            <span class="badge bg-info">
+                                ${manufacturer.Country}
+                            </span>
+                        </td>
+
+                        <!-- Ano Fundação -->
+                        <td class="text-center align-middle">
+                            <strong>${manufacturer.FoundedYear}</strong>
+                        </td>
+
+                        <!-- Website -->
+                        <td class="align-middle">
+                            ${manufacturer.Website ? 
+                                `<a href="${manufacturer.Website}" target="_blank" class="text-decoration-none">
+                                    <i class="fas fa-external-link-alt me-1"></i>Website
+                                </a>` :
+                                '<span class="text-muted">-</span>'
+                            }
+                        </td>
+
+                        <!-- Status -->
+                        <td class="text-center align-middle">
+                            ${manufacturer.IsActive ? 
+                                '<span class="badge bg-success"><i class="fas fa-check me-1"></i>Ativo</span>' :
+                                '<span class="badge bg-danger"><i class="fas fa-times me-1"></i>Inativo</span>'
+                            }
+                        </td>
+
+                        <!-- Ações -->
+                        <td class="text-center align-middle">
+                            <div class="btn-group" role="group">
+                                <!-- Visualizar -->
+                                <a href="/Manufacturers/Details/${manufacturer.Id}"
+                                    class="btn btn-outline-info btn-sm" title="Visualizar detalhes">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+
+                                <!-- Editar -->
+                                <a href="/Manufacturers/Edit/${manufacturer.Id}"
+                                    class="btn btn-outline-warning btn-sm" title="Editar fabricante">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+
+                                <!-- Excluir -->
+                                <button type="button" class="btn btn-outline-danger btn-sm delete-btn" 
+                                    data-manufacturer-id="${manufacturer.Id}"
+                                    data-manufacturer-name="${manufacturer.Name}" 
+                                    title="Excluir fabricante">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+
+                // Adicionar event listeners aos botões de delete
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const manufacturerId = this.getAttribute('data-manufacturer-id');
+                        const manufacturerName = this.getAttribute('data-manufacturer-name');
+                        
+                        currentDeleteId = manufacturerId;
+                        document.getElementById('manufacturerName').textContent = manufacturerName;
+                        
+                        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+                        modal.show();
+                    });
+                });
+            }
+
+            // Função para filtrar fabricantes
+            function filterManufacturers() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const selectedCountry = countryFilter.value;
+                const selectedStatus = statusFilter.value;
+
+                const filteredManufacturers = manufacturers.filter(manufacturer => {
+                    const matchesSearch = !searchTerm || 
+                        manufacturer.Name.toLowerCase().includes(searchTerm) ||
+                        manufacturer.Country.toLowerCase().includes(searchTerm);
+                    
+                    const matchesCountry = !selectedCountry || 
+                        manufacturer.Country === selectedCountry;
+                    
+                    const matchesStatus = !selectedStatus || 
+                        manufacturer.IsActive.toString() === selectedStatus;
+
+                    return matchesSearch && matchesCountry && matchesStatus;
+                });
+
+                renderManufacturersTable(filteredManufacturers);
+            }
+
+            // Função para limpar filtros
+            function clearFilters() {
+                searchInput.value = '';
+                countryFilter.value = '';
+                statusFilter.value = '';
+                renderManufacturersTable(manufacturers);  
+            }
+
+            // Função para atualizar estatísticas
+            function updateStats() {
+                const total = manufacturers.length;
+                const active = manufacturers.filter(m => m.IsActive).length;
+                const countries = new Set(manufacturers.map(m => m.Country)).size;
+
+                document.getElementById('totalManufacturers').textContent = total;
+                document.getElementById('activeManufacturers').textContent = active;
+                document.getElementById('countriesCount').textContent = countries;
+
+                // Simular contagem de veículos (seria necessário endpoint específico)
+                document.getElementById('vehiclesCount').textContent = '...';
+            }
+
+            // Confirmar exclusão
+            document.getElementById('confirmDelete').addEventListener('click', async function() {
+                if (!currentDeleteId) return;
+
+                try {
+                    const response = await fetch(`/api/manufacturers/${currentDeleteId}`, {
+                        method: 'DELETE',
+                        credentials: 'same-origin'
+                    });
+
+                    if (response.ok) {
+                        // Recarregar dados
+                        await loadManufacturers();
+                        renderManufacturersTable(manufacturers);
+                        updateStats();
+                        populateCountryFilter();
+                        
+                        // Fechar modal
+                        bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+                        
+                        // Mostrar sucesso
+                        showToast('Fabricante excluído com sucesso!', 'success');
+                    } else {
+                        const errorData = await response.json();
+                        showToast(errorData.error || 'Erro ao excluir fabricante', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erro ao excluir fabricante:', error);
+                    showToast('Erro ao excluir fabricante', 'error');
+                }
+            });
+
+            // Funções utilitárias
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+
+            function showError() {
+                loadingIndicator.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                        <h4 class="text-danger">Erro ao carregar dados</h4>
+                        <p class="text-muted">Tente recarregar a página</p>
+                        <button class="btn btn-primary" onclick="location.reload()">
+                            <i class="fas fa-refresh me-2"></i>Recarregar
+                        </button>
+                    </div>
+                `;
+            }
+
+            function showToast(message, type) {
+                // Criar toast dinamicamente
+                const toastHtml = `
+                    <div class="toast align-items-center text-white ${type === 'success' ? 'bg-success' : 'bg-danger'} border-0" role="alert">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="fas ${type === 'success' ? 'fa-check' : 'fa-exclamation-triangle'} me-2"></i>
+                                ${message}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                        </div>
+                    </div>
+                `;
+                
+                // Adicionar ao container de toasts (criar se não existir)
+                let toastContainer = document.getElementById('toast-container');
+                if (!toastContainer) {
+                    toastContainer = document.createElement('div');
+                    toastContainer.id = 'toast-container';
+                    toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+                    document.body.appendChild(toastContainer);
+                }
+                
+                toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+                
+                // Inicializar e mostrar o toast
+                const toastElement = toastContainer.lastElementChild;
+                const toast = new bootstrap.Toast(toastElement);
+                toast.show();
+                
+                // Remover o elemento após esconder
+                toastElement.addEventListener('hidden.bs.toast', () => {
+                    toastElement.remove();
+                });
+            }
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        .table th {
+            border-top: none;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .btn-group .btn {
+            border-radius: 0.375rem !important;
+            margin-right: 2px;
+        }
+
+        .btn-group .btn:last-child {
+            margin-right: 0;
+        }
+
+        .card-header {
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.05);
+        }
+
+        .table-responsive {
+            border-radius: 0.5rem;
+        }
+
+        .card {
+            border: none;
+            border-radius: 0.75rem;
+        }
+    </style>
+}

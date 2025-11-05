@@ -1,0 +1,626 @@
+@{
+    ViewData["Title"] = "Gestão de Veículos";
+}
+
+<div class="container-fluid">
+    <!-- Header da Página -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="fas fa-car text-primary me-2"></i>
+                        Gestão de Veículos
+                    </h2>
+                    <p class="text-muted mb-0">Gerencie todos os veículos disponíveis no sistema</p>
+                </div>
+                <div>
+                    <a href="/Vehicles/Create" class="btn btn-md btn-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        Novo Veículo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card de Estatísticas -->
+    <div class="row mb-4" id="statsCards">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0" id="totalVehicles">0</h4>
+                            <small>Total de Veículos</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-car fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0" id="availableVehicles">0</h4>
+                            <small>Disponíveis</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0" id="soldVehicles">0</h4>
+                            <small>Vendidos</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-shopping-cart fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="mb-0" id="manufacturersCount">0</h4>
+                            <small>Fabricantes</small>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-industry fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros de Busca -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <input type="text" id="searchInput" class="form-control"
+                        placeholder="Buscar por modelo ou fabricante..." />
+                </div>
+                <div class="col-md-3">
+                    <select id="manufacturerFilter" class="form-select">
+                        <option value="">Todos os Fabricantes</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select id="typeFilter" class="form-select">
+                        <option value="">Todos os Tipos</option>
+                        <option value="1">Carro</option>
+                        <option value="2">Moto</option>
+                        <option value="3">Caminhão</option>
+                        <option value="4">SUV</option>
+                        <option value="5">Pickup</option>
+                        <option value="6">Van</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" id="clearFilters" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-times me-1"></i>Limpar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Veículos -->
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-list me-2"></i>
+                Lista de Veículos (<span id="resultsCount">0</span> resultado(s))
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <!-- Loading state -->
+            <div id="loadingIndicator" class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Carregando...</span>
+                </div>
+                <p class="mt-3 text-muted">Carregando veículos...</p>
+            </div>
+
+            <!-- Tabela -->
+            <div id="vehiclesTable" class="d-none">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="text-center" style="width: 80px;">ID</th>
+                                <th>Modelo</th>
+                                <th>Fabricante</th>
+                                <th class="text-center">Ano</th>
+                                <th class="text-center">Tipo</th>
+                                <th class="text-end">Preço</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-center" style="width: 200px;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vehiclesTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Estado vazio -->
+            <div id="emptyState" class="text-center py-5 d-none">
+                <div class="mb-4">
+                    <i class="fas fa-car fa-3x text-muted"></i>
+                </div>
+                <h4 class="text-muted">Nenhum veículo encontrado</h4>
+                <p class="text-muted mb-4">Comece adicionando seu primeiro veículo ao sistema.</p>
+                <a href="/Vehicles/Create" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>
+                    Adicionar Primeiro Veículo
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Confirmar Exclusão
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0 me-3">
+                        <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+                    </div>
+                    <div>
+                        <h6>Tem certeza que deseja excluir este veículo?</h6>
+                        <p class="mb-0">
+                            O veículo <strong id="vehicleName"></strong> será excluído permanentemente.
+                            Esta ação não pode ser desfeita.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>
+                    Cancelar
+                </button>
+                <button type="button" id="confirmDelete" class="btn btn-danger">
+                    <i class="fas fa-trash me-2"></i>
+                    Excluir Veículo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let vehicles = [];
+            let manufacturers = [];
+            let currentDeleteId = null;
+
+            // Elementos do DOM
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const vehiclesTable = document.getElementById('vehiclesTable');
+            const emptyState = document.getElementById('emptyState');
+            const vehiclesTableBody = document.getElementById('vehiclesTableBody');
+            const searchInput = document.getElementById('searchInput');
+            const manufacturerFilter = document.getElementById('manufacturerFilter');
+            const typeFilter = document.getElementById('typeFilter');
+            const clearFiltersBtn = document.getElementById('clearFilters');
+            const resultsCount = document.getElementById('resultsCount');
+
+            // Carregar dados iniciais
+            Promise.all([loadVehicles(), loadManufacturers()])
+                .then(() => {
+                    renderVehiclesTable(vehicles);
+                    updateStats();
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar dados:', error);
+                    showError();
+                });
+
+            // Event listeners para filtros
+            searchInput.addEventListener('input', debounce(filterVehicles, 300));
+            manufacturerFilter.addEventListener('change', filterVehicles);
+            typeFilter.addEventListener('change', filterVehicles);
+            clearFiltersBtn.addEventListener('click', clearFilters);
+
+            // Função para carregar veículos
+            async function loadVehicles() {
+                try {
+                    const response = await fetch('/api/vehicles', {
+                        credentials: 'same-origin'
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Erro ao carregar veículos');
+                    }
+
+                    vehicles = await response.json();
+                } catch (error) {
+                    console.error('Erro ao carregar veículos:', error);
+                    throw error;
+                }
+            }
+
+            // Função para carregar fabricantes
+            async function loadManufacturers() {
+                try {
+                    const response = await fetch('/api/manufacturers', {
+                        credentials: 'same-origin'
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Erro ao carregar fabricantes');
+                    }
+
+                    manufacturers = await response.json();
+                    populateManufacturerFilter();
+                } catch (error) {
+                    console.error('Erro ao carregar fabricantes:', error);
+                    throw error;
+                }
+            }
+
+            // Função para popular o filtro de fabricantes
+            function populateManufacturerFilter() {
+                manufacturerFilter.innerHTML = '<option value="">Todos os Fabricantes</option>';
+                manufacturers.forEach(manufacturer => {
+                    const option = document.createElement('option');
+                    option.value = manufacturer.Id;
+                    option.textContent = manufacturer.Name;
+                    manufacturerFilter.appendChild(option);
+                });
+            }
+
+            // Função para renderizar a tabela
+            function renderVehiclesTable(vehiclesToRender) {
+                loadingIndicator.classList.add('d-none');
+                
+                if (vehiclesToRender.length === 0) {
+                    vehiclesTable.classList.add('d-none');
+                    emptyState.classList.remove('d-none');
+                    resultsCount.textContent = '0';
+                    return;
+                }
+
+                emptyState.classList.add('d-none');
+                vehiclesTable.classList.remove('d-none');
+                resultsCount.textContent = vehiclesToRender.length;
+
+                vehiclesTableBody.innerHTML = vehiclesToRender.map(vehicle => `
+                    <tr>
+                        <!-- ID -->
+                        <td class="text-center align-middle">
+                            <span class="badge bg-secondary">#${vehicle.Id}</span>
+                        </td>
+
+                        <!-- Modelo -->
+                        <td class="align-middle">
+                            <div>
+                                <h6 class="mb-1 fw-semibold">${vehicle.Model}</h6>
+                                <small class="text-muted">${formatDate(vehicle.CreatedAt)}</small>
+                            </div>
+                        </td>
+
+                        <!-- Fabricante -->
+                        <td class="align-middle">
+                            <span class="badge bg-secondary">
+                                ${vehicle.ManufacturerName || 'N/A'}
+                            </span>
+                        </td>
+
+                        <!-- Ano -->
+                        <td class="text-center align-middle">
+                            <strong>${vehicle.Year}</strong>
+                        </td>
+
+                        <!-- Tipo -->
+                        <td class="text-center align-middle">
+                            <span class="badge ${getTypeClass(vehicle.Type)}">
+                                ${getTypeName(vehicle.Type)}
+                            </span>
+                        </td>
+
+                        <!-- Preço -->
+                        <td class="text-end align-middle">
+                            <strong class="text-success fs-6">
+                                ${formatCurrency(vehicle.Price)}
+                            </strong>
+                        </td>
+
+                        <!-- Status -->
+                        <td class="text-center align-middle">
+                            ${vehicle.IsActive ? 
+                                '<span class="badge bg-success"><i class="fas fa-check me-1"></i>Disponível</span>' :
+                                '<span class="badge bg-danger"><i class="fas fa-shopping-cart me-1"></i>Vendido</span>'
+                            }
+                        </td>
+
+                        <!-- Ações -->
+                        <td class="text-center align-middle">
+                            <div class="btn-group" role="group">
+                                <!-- Visualizar -->
+                                <a href="/Vehicles/Details/${vehicle.Id}"
+                                    class="btn btn-outline-info btn-sm" title="Visualizar detalhes">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+
+                                <!-- Editar -->
+                                <a href="/Vehicles/Edit/${vehicle.Id}"
+                                    class="btn btn-outline-warning btn-sm" title="Editar veículo">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+
+                                <!-- Excluir -->
+                                <button type="button" class="btn btn-outline-danger btn-sm delete-btn" 
+                                    data-vehicle-id="${vehicle.Id}"
+                                    data-vehicle-name="${vehicle.Model}" 
+                                    title="Excluir veículo">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+
+                // Adicionar event listeners aos botões de delete
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const vehicleId = this.getAttribute('data-vehicle-id');
+                        const vehicleName = this.getAttribute('data-vehicle-name');
+                        
+                        currentDeleteId = vehicleId;
+                        document.getElementById('vehicleName').textContent = vehicleName;
+                        
+                        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+                        modal.show();
+                    });
+                });
+            }
+
+            // Função para filtrar veículos
+            function filterVehicles() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const selectedManufacturer = manufacturerFilter.value;
+                const selectedType = typeFilter.value;
+
+                const filteredVehicles = vehicles.filter(vehicle => {
+                    const matchesSearch = !searchTerm || 
+                        vehicle.model.toLowerCase().includes(searchTerm) ||
+                        vehicle.manufacturerName.toLowerCase().includes(searchTerm);
+                    
+                    const matchesManufacturer = !selectedManufacturer || 
+                        vehicle.manufacturerId.toString() === selectedManufacturer;
+                    
+                    const matchesType = !selectedType || 
+                        vehicle.type?.toString() === selectedType;
+
+                    return matchesSearch && matchesManufacturer && matchesType;
+                });
+
+                renderVehiclesTable(filteredVehicles);
+            }
+
+            // Função para limpar filtros
+            function clearFilters() {
+                searchInput.value = '';
+                manufacturerFilter.value = '';
+                typeFilter.value = '';
+                renderVehiclesTable(vehicles);  
+            }
+
+            // Função para atualizar estatísticas
+            function updateStats() {
+                const total = vehicles.length;
+                const available = vehicles.filter(v => v.IsActive).length;
+                const sold = vehicles.filter(v => !v.IsActive).length;
+                const manufacturersCount = new Set(vehicles.map(v => v.ManufacturerId)).size;
+
+                document.getElementById('totalVehicles').textContent = total;
+                document.getElementById('availableVehicles').textContent = available;
+                document.getElementById('soldVehicles').textContent = sold;
+                document.getElementById('manufacturersCount').textContent = manufacturersCount;
+            }
+
+            // Confirmar exclusão
+            document.getElementById('confirmDelete').addEventListener('click', async function() {
+                if (!currentDeleteId) return;
+
+                try {
+                    const response = await fetch(`/api/vehicles/${currentDeleteId}`, {
+                        method: 'DELETE',
+                        credentials: 'same-origin'
+                    });
+
+                    if (response.ok) {
+                        // Recarregar dados
+                        await loadVehicles();
+                        renderVehiclesTable(vehicles);
+                        updateStats();
+                        
+                        // Fechar modal
+                        bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+                        
+                        // Mostrar sucesso
+                        showToast('Veículo excluído com sucesso!', 'success');
+                    } else {
+                        const errorData = await response.json();
+                        showToast(errorData.error || 'Erro ao excluir veículo', 'error');
+                    }
+                } catch (error) {
+                    console.error('Erro ao excluir veículo:', error);
+                    showToast('Erro ao excluir veículo', 'error');
+                }
+            });
+
+            // Funções utilitárias
+            function getTypeClass(type) {
+                const typeClasses = {
+                    1: 'bg-primary',      // Carro
+                    2: 'bg-success',      // Moto
+                    3: 'bg-danger',       // Caminhão
+                    4: 'bg-warning text-dark', // SUV
+                    5: 'bg-info',         // Pickup
+                    6: 'bg-dark'          // Van
+                };
+                return typeClasses[type] || 'bg-secondary';
+            }
+
+            function getTypeName(type) {
+                const typeNames = {
+                    1: 'Carro',
+                    2: 'Moto',
+                    3: 'Caminhão',
+                    4: 'SUV',
+                    5: 'Pickup',
+                    6: 'Van'
+                };
+                return typeNames[type] || 'N/A';
+            }
+
+            function formatDate(dateString) {
+                return new Date(dateString).toLocaleDateString('pt-BR');
+            }
+
+            function formatCurrency(value) {
+                return new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(value);
+            }
+
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+
+            function showError() {
+                loadingIndicator.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                        <h4 class="text-danger">Erro ao carregar dados</h4>
+                        <p class="text-muted">Tente recarregar a página</p>
+                        <button class="btn btn-primary" onclick="location.reload()">
+                            <i class="fas fa-refresh me-2"></i>Recarregar
+                        </button>
+                    </div>
+                `;
+            }
+
+            function showToast(message, type) {
+                // Criar toast dinamicamente
+                const toastHtml = `
+                    <div class="toast align-items-center text-white ${type === 'success' ? 'bg-success' : 'bg-danger'} border-0" role="alert">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="fas ${type === 'success' ? 'fa-check' : 'fa-exclamation-triangle'} me-2"></i>
+                                ${message}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                        </div>
+                    </div>
+                `;
+                
+                // Adicionar ao container de toasts (criar se não existir)
+                let toastContainer = document.getElementById('toast-container');
+                if (!toastContainer) {
+                    toastContainer = document.createElement('div');
+                    toastContainer.id = 'toast-container';
+                    toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+                    document.body.appendChild(toastContainer);
+                }
+                
+                toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+                
+                // Inicializar e mostrar o toast
+                const toastElement = toastContainer.lastElementChild;
+                const toast = new bootstrap.Toast(toastElement);
+                toast.show();
+                
+                // Remover o elemento após esconder
+                toastElement.addEventListener('hidden.bs.toast', () => {
+                    toastElement.remove();
+                });
+            }
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        .table th {
+            border-top: none;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+
+        .btn-group .btn {
+            border-radius: 0.375rem !important;
+            margin-right: 2px;
+        }
+
+        .btn-group .btn:last-child {
+            margin-right: 0;
+        }
+
+        .card-header {
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.05);
+        }
+
+        .table-responsive {
+            border-radius: 0.5rem;
+        }
+
+        .card {
+            border: none;
+            border-radius: 0.75rem;
+        }
+    </style>
+}

@@ -1,0 +1,450 @@
+@{
+    ViewData["Title"] = "Concessionárias";
+}
+
+<!-- Loading Indicator -->
+<div id="loadingIndicator" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Carregando...</span>
+    </div>
+    <p class="mt-3 text-muted">Carregando concessionárias...</p>
+</div>
+
+<!-- Main Content -->
+<div id="dealershipsContent" class="d-none">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1"><i class="fas fa-building text-primary me-2"></i>Concessionárias</h2>
+                <p class="text-muted mb-0">Gerencie as concessionárias cadastradas <span id="totalCount" class="badge bg-secondary"></span></p>
+            </div>
+            <a href="/Dealerships/Create" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Nova Concessionária
+            </a>
+        </div>
+
+        <!-- Filtros de Busca -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-filter me-2"></i>Filtros
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" id="searchInput" class="form-control" placeholder="Buscar por nome, cidade ou estado..." />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex gap-2">
+                            <button type="button" id="btnSearch" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>Buscar
+                            </button>
+                            <button type="button" id="btnClear" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Limpar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Concessionárias -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list me-2"></i>Lista de Concessionárias
+                </h5>
+                <div class="d-flex align-items-center gap-3">
+                    <small id="resultsInfo" class="opacity-75"></small>
+                </div>
+            </div>
+            <div class="card-body p-0">
+
+                <!-- Loading State para Tabela -->
+                <div id="tableLoading" class="text-center py-5 d-none">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Carregando...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Buscando concessionárias...</p>
+                </div>
+
+                <!-- Tabela de Concessionárias -->
+                <div id="dealershipsTable" class="table-responsive d-none">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th scope="col" class="text-center" style="width: 80px;">#</th>
+                                <th scope="col">Nome</th>
+                                <th scope="col">Endereço</th>
+                                <th scope="col">Cidade/Estado</th>
+                                <th scope="col" class="text-center">Capacidade</th>
+                                <th scope="col" class="text-center" style="width: 180px;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dealershipsTableBody">
+                            <!-- Content will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Estado Vazio -->
+                <div id="emptyState" class="text-center py-5 d-none">
+                    <i class="fas fa-building fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Nenhuma concessionária encontrada</h5>
+                    <p class="text-muted mb-4">Não há concessionárias cadastradas ou que correspondam aos filtros aplicados.</p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <a href="/Dealerships/Create" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Nova Concessionária
+                        </a>
+                        <button type="button" class="btn btn-outline-secondary" onclick="clearFilters()">
+                            <i class="fas fa-times me-2"></i>Limpar Filtros
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Estado de Erro -->
+                <div id="errorState" class="text-center py-5 d-none">
+                    <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                    <h5 class="text-danger">Erro ao carregar dados</h5>
+                    <p class="text-muted mb-4">Não foi possível carregar as concessionárias. Tente novamente.</p>
+                    <button type="button" class="btn btn-primary" onclick="loadDealerships()">
+                        <i class="fas fa-redo me-2"></i>Tentar Novamente
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação para Exclusão -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirmar Exclusão
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-building fa-2x text-danger"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-1">Você tem certeza?</h6>
+                        <p class="text-muted mb-0">
+                            Esta ação excluirá permanentemente a concessionária
+                            <strong id="deleteDealershipName"></strong>.
+                        </p>
+                    </div>
+                </div>
+                <div class="alert alert-warning mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Atenção:</strong> Esta ação não pode ser desfeita.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDelete">
+                    <span class="spinner-border spinner-border-sm me-2 d-none" id="deleteSpinner"></span>
+                    <i class="fas fa-trash me-2" id="deleteIcon"></i>Excluir Concessionária
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentDealerships = [];
+        let filteredDealerships = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDealerships();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            // Botões de busca
+            document.getElementById('btnSearch').addEventListener('click', searchDealerships);
+            document.getElementById('btnClear').addEventListener('click', clearFilters);
+            
+            // Enter no campo de busca
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchDealerships();
+                }
+            });
+
+            // Botão de confirmação de exclusão
+            document.getElementById('confirmDelete').addEventListener('click', executeDelete);
+        }
+
+        async function loadDealerships() {
+            try {
+                showLoadingState();
+                
+                const response = await fetch('/api/dealerships', {
+                    credentials: 'same-origin'
+                });
+
+                if (response.status === 401) {
+                    window.location.href = '/Identity/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+
+                const dealerships = await response.json();
+                currentDealerships = dealerships || [];
+                filteredDealerships = [...currentDealerships];
+                
+                updateDisplay();
+                hideLoadingState();
+                
+            } catch (error) {
+                console.error('Erro ao carregar concessionárias:', error);
+                showErrorState(error.message);
+                hideLoadingState();
+            }
+        }
+
+        function searchDealerships() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            if (!searchTerm) {
+                filteredDealerships = [...currentDealerships];
+            } else {
+                filteredDealerships = currentDealerships.filter(dealership => {
+                    return (
+                        dealership.Name?.toLowerCase().includes(searchTerm) ||
+                        dealership.City?.toLowerCase().includes(searchTerm) ||
+                        dealership.State?.toLowerCase().includes(searchTerm) ||
+                        dealership.Address?.toLowerCase().includes(searchTerm)
+                    );
+                });
+            }
+            
+            updateDisplay();
+        }
+
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            filteredDealerships = [...currentDealerships];
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            const hasResults = filteredDealerships.length > 0;
+            const hasSearch = document.getElementById('searchInput').value.trim().length > 0;
+            
+            // Atualizar contadores
+            document.getElementById('totalCount').textContent = `${filteredDealerships.length} encontrada${filteredDealerships.length !== 1 ? 's' : ''}`;
+            document.getElementById('resultsInfo').textContent = hasSearch ? 
+                `${filteredDealerships.length} de ${currentDealerships.length} concessionárias` : 
+                `${currentDealerships.length} concessionária${currentDealerships.length !== 1 ? 's' : ''}`;
+
+            // Mostrar/esconder elementos
+            document.getElementById('dealershipsTable').classList.toggle('d-none', !hasResults);
+            document.getElementById('emptyState').classList.toggle('d-none', hasResults);
+            
+            if (hasResults) {
+                renderTable();
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('dealershipsTableBody');
+            tbody.innerHTML = '';
+
+            filteredDealerships.forEach((dealership, index) => {
+                const row = document.createElement('tr');
+                row.className = 'align-middle';
+                
+                row.innerHTML = `
+                    <td class="text-center">
+                        <span class="badge bg-secondary">#${dealership.Id}</span>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0 me-3">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                                     style="width: 40px; height: 40px;">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0 text-truncate" style="max-width: 200px;" title="${dealership.Name}">
+                                    ${dealership.Name}
+                                </h6>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="text-truncate" style="max-width: 150px;" title="${dealership.Address || 'N/A'}">
+                            <i class="fas fa-map-marker-alt text-muted me-1"></i>
+                            ${dealership.Address || 'N/A'}
+                        </div>
+                    </td>
+                    <td>
+                        <div>
+                            <strong>${dealership.City || 'N/A'}</strong>
+                            <br>
+                            <small class="text-muted">${dealership.State || 'N/A'}</small>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-info">
+                            <i class="fas fa-car me-1"></i>
+                            ${dealership.MaxCapacity || 0}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <div class="btn-group" role="group">
+                            <a href="/Dealerships/Details/${dealership.Id}" 
+                               class="btn btn-outline-info btn-sm" 
+                               title="Ver detalhes">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="/Dealerships/Edit/${dealership.Id}" 
+                               class="btn btn-outline-warning btn-sm" 
+                               title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button type="button" 
+                                    class="btn btn-outline-danger btn-sm" 
+                                    title="Excluir"
+                                    onclick="showDeleteModal(${dealership.Id}, '${dealership.Name.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        function showLoadingState() {
+            document.getElementById('loadingIndicator').classList.remove('d-none');
+            document.getElementById('dealershipsContent').classList.add('d-none');
+        }
+
+        function hideLoadingState() {
+            document.getElementById('loadingIndicator').classList.add('d-none');
+            document.getElementById('dealershipsContent').classList.remove('d-none');
+        }
+
+        function showTableLoading() {
+            document.getElementById('tableLoading').classList.remove('d-none');
+            document.getElementById('dealershipsTable').classList.add('d-none');
+            document.getElementById('emptyState').classList.add('d-none');
+            document.getElementById('errorState').classList.add('d-none');
+        }
+
+        function showErrorState(errorMessage) {
+            document.getElementById('errorState').classList.remove('d-none');
+            document.getElementById('dealershipsTable').classList.add('d-none');
+            document.getElementById('emptyState').classList.add('d-none');
+            document.getElementById('tableLoading').classList.add('d-none');
+        }
+
+        let currentDeleteId = null;
+
+        function showDeleteModal(dealershipId, dealershipName) {
+            currentDeleteId = dealershipId;
+            document.getElementById('deleteDealershipName').textContent = dealershipName;
+            
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            modal.show();
+        }
+
+        async function executeDelete() {
+            if (!currentDeleteId) return;
+
+            const confirmButton = document.getElementById('confirmDelete');
+            const deleteSpinner = document.getElementById('deleteSpinner');
+            const deleteIcon = document.getElementById('deleteIcon');
+            
+            // Mostrar loading
+            confirmButton.disabled = true;
+            deleteSpinner.classList.remove('d-none');
+            deleteIcon.classList.add('d-none');
+
+            try {
+                const response = await fetch(`/api/dealerships/${currentDeleteId}`, {
+                    method: 'DELETE',
+                    credentials: 'same-origin'
+                });
+
+                if (response.ok) {
+                    // Fechar modal
+                    bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+                    
+                    // Mostrar toast de sucesso
+                    showToast('Concessionária excluída com sucesso!', 'success');
+                    
+                    // Recarregar dados
+                    await loadDealerships();
+                } else {
+                    const errorData = await response.json();
+                    showToast(errorData.error || 'Erro ao excluir concessionária', 'error');
+                }
+            } catch (error) {
+                console.error('Erro ao excluir concessionária:', error);
+                showToast('Erro de conexão ao excluir concessionária', 'error');
+            } finally {
+                // Restaurar botão
+                confirmButton.disabled = false;
+                deleteSpinner.classList.add('d-none');
+                deleteIcon.classList.remove('d-none');
+                currentDeleteId = null;
+            }
+        }
+
+        function showToast(message, type) {
+            // Criar toast dinamicamente
+            const toastHtml = `
+                <div class="toast align-items-center text-white ${type === 'success' ? 'bg-success' : 'bg-danger'} border-0" role="alert">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="fas ${type === 'success' ? 'fa-check' : 'fa-exclamation-triangle'} me-2"></i>
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            `;
+            
+            // Adicionar ao container de toasts (criar se não existir)
+            let toastContainer = document.getElementById('toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.id = 'toast-container';
+                toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+                document.body.appendChild(toastContainer);
+            }
+            
+            toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+            
+            // Inicializar e mostrar o toast
+            const toastElement = toastContainer.lastElementChild;
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+            
+            // Remover o elemento após esconder
+            toastElement.addEventListener('hidden.bs.toast', () => {
+                toastElement.remove();
+            });
+        }
+    </script>
+}

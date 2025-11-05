@@ -1,0 +1,412 @@
+@{
+    ViewData["Title"] = "Detalhes da Venda";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-1"><i class="fas fa-eye text-info me-2"></i>Detalhes da Venda</h2>
+                <p class="text-muted mb-0">Visualize as informações da venda</p>
+            </div>
+            <div>
+                <a href="/Sales" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Voltar à Lista
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading state -->
+    <div id="loadingIndicator" class="text-center my-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+        <p class="mt-3 text-muted">Carregando detalhes da venda...</p>
+    </div>
+
+    <div id="saleDetails" class="row d-none">
+        <!-- Coluna Principal - Informações da Venda -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0" id="saleTitle">
+                        <i class="fas fa-handshake me-2"></i>Carregando...
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Informações Gerais -->
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-info-circle me-2"></i>Informações Gerais
+                            </h6>
+                            <dl class="row">
+                                <dt class="col-sm-5">ID</dt>
+                                <dd class="col-sm-7" id="saleId">#-</dd>
+
+                                <dt class="col-sm-5">Protocolo</dt>
+                                <dd class="col-sm-7" id="saleProtocol">-</dd>
+
+                                <dt class="col-sm-5">Data da Venda</dt>
+                                <dd class="col-sm-7" id="saleDate">-</dd>
+
+                                <dt class="col-sm-5">Preço de Venda</dt>
+                                <dd class="col-sm-7" id="salePrice">-</dd>
+
+                                <dt class="col-sm-5">Vendedor</dt>
+                                <dd class="col-sm-7" id="salesPerson">-</dd>
+
+                                <dt class="col-sm-5">Status</dt>
+                                <dd class="col-sm-7" id="saleStatus">-</dd>
+                            </dl>
+                        </div>
+
+                        <!-- Cliente -->
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-user me-2"></i>Cliente
+                            </h6>
+                            <dl class="row">
+                                <dt class="col-sm-4">Nome</dt>
+                                <dd class="col-sm-8" id="customerName">-</dd>
+
+                                <dt class="col-sm-4">CPF</dt>
+                                <dd class="col-sm-8" id="customerCpf">-</dd>
+
+                                <dt class="col-sm-4">Telefone</dt>
+                                <dd class="col-sm-8" id="customerPhone">-</dd>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+                        <!-- Veículo -->
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-car me-2"></i>Veículo
+                            </h6>
+                            <dl class="row">
+                                <dt class="col-sm-5">Fabricante</dt>
+                                <dd class="col-sm-7" id="vehicleManufacturer">-</dd>
+
+                                <dt class="col-sm-5">Modelo</dt>
+                                <dd class="col-sm-7" id="vehicleModel">-</dd>
+
+                                <dt class="col-sm-5">Ano</dt>
+                                <dd class="col-sm-7" id="vehicleYear">-</dd>
+
+                                <dt class="col-sm-5">Preço Tabela</dt>
+                                <dd class="col-sm-7" id="vehiclePrice">-</dd>
+                            </dl>
+                        </div>
+
+                        <!-- Concessionária -->
+                        <div class="col-md-6">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-building me-2"></i>Concessionária
+                            </h6>
+                            <dl class="row">
+                                <dt class="col-sm-4">Nome</dt>
+                                <dd class="col-sm-8" id="dealershipName">-</dd>
+
+                                <dt class="col-sm-4">Cidade</dt>
+                                <dd class="col-sm-8" id="dealershipCity">-</dd>
+
+                                <dt class="col-sm-4">Estado</dt>
+                                <dd class="col-sm-8" id="dealershipState">-</dd>
+
+                                <dt class="col-sm-4">Telefone</dt>
+                                <dd class="col-sm-8" id="dealershipPhone">-</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex justify-content-end gap-2">
+                    <a id="editLink" href="#" class="btn btn-warning text-dark">
+                        <i class="fas fa-edit me-2"></i>Editar
+                    </a>
+                    <button id="deleteButton" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Excluir
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coluna Lateral - Resumo e Ações -->
+        <div class="col-lg-4">
+            <!-- Card de Resumo Financeiro -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-dollar-sign me-2"></i>Resumo Financeiro
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Preço de Tabela:</span>
+                        <span id="summaryVehiclePrice" class="fw-bold">-</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">Preço de Venda:</span>
+                        <span id="summarySalePrice" class="fw-bold text-success">-</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">Desconto:</span>
+                        <span id="summaryDiscount" class="fw-bold">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card de Links Rápidos -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-link me-2"></i>Links Rápidos
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a id="customerLink" href="#" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-user me-2"></i>Ver Cliente
+                        </a>
+                        <a id="vehicleLink" href="#" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-car me-2"></i>Ver Veículo
+                        </a>
+                        <a id="dealershipLink" href="#" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-building me-2"></i>Ver Concessionária
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const saleId = window.location.pathname.split('/').pop();
+            
+            if (!saleId || saleId === 'Details') {
+                window.location.href = '/Sales';
+                return;
+            }
+
+            loadSaleDetails(saleId);
+
+            async function loadSaleDetails(id) {
+                try {
+                    const response = await fetch(`/api/sales/${id}`, { 
+                        credentials: 'same-origin' 
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Venda não encontrada');
+                    }
+
+                    const sale = await response.json();
+                    populateDetails(sale);
+                    
+                    document.getElementById('loadingIndicator').classList.add('d-none');
+                    document.getElementById('saleDetails').classList.remove('d-none');
+                } catch (error) {
+                    console.error('Erro ao carregar venda:', error);
+                    showError();
+                }
+            }
+
+            function populateDetails(sale) {
+                // Título
+                document.getElementById('saleTitle').innerHTML = `
+                    <i class="fas fa-handshake me-2"></i>Venda ${sale.Protocol}
+                `;
+
+                // Informações Gerais
+                document.getElementById('saleId').textContent = `#${sale.Id}`;
+                document.getElementById('saleProtocol').innerHTML = `<span class="badge bg-info">${sale.Protocol}</span>`;
+                document.getElementById('saleDate').textContent = formatDate(sale.SaleDate);
+                document.getElementById('salePrice').innerHTML = `<span class="fw-bold text-success">${formatCurrency(sale.SalePrice)}</span>`;
+                document.getElementById('salesPerson').textContent = sale.SalesPersonName || 'N/A';
+                document.getElementById('saleStatus').innerHTML = sale.IsActive ? 
+                    '<span class="badge bg-success"><i class="fas fa-check me-1"></i>Ativa</span>' :
+                    '<span class="badge bg-danger"><i class="fas fa-times me-1"></i>Cancelada</span>';
+
+                // Cliente
+                document.getElementById('customerName').textContent = sale.Customer?.Name || 'N/A';
+                document.getElementById('customerCpf').textContent = sale.Customer?.Cpf || 'N/A';
+                document.getElementById('customerPhone').textContent = sale.Customer?.Phone || 'N/A';
+
+                // Veículo
+                document.getElementById('vehicleManufacturer').textContent = sale.Vehicle?.ManufacturerName || 'N/A';
+                document.getElementById('vehicleModel').textContent = sale.Vehicle?.Model || 'N/A';
+                document.getElementById('vehicleYear').textContent = sale.Vehicle?.Year || 'N/A';
+                document.getElementById('vehiclePrice').textContent = sale.Vehicle?.Price ? formatCurrency(sale.Vehicle.Price) : 'N/A';
+
+                // Concessionária
+                document.getElementById('dealershipName').textContent = sale.Dealership?.Name || 'N/A';
+                document.getElementById('dealershipCity').textContent = sale.Dealership?.City || 'N/A';
+                document.getElementById('dealershipState').textContent = sale.Dealership?.State || 'N/A';
+                document.getElementById('dealershipPhone').textContent = sale.Dealership?.Phone || 'N/A';
+
+                // Resumo Financeiro
+                const vehiclePrice = sale.Vehicle?.Price || 0;
+                const salePrice = sale.SalePrice || 0;
+                const discount = vehiclePrice - salePrice;
+                
+                document.getElementById('summaryVehiclePrice').textContent = formatCurrency(vehiclePrice);
+                document.getElementById('summarySalePrice').textContent = formatCurrency(salePrice);
+                document.getElementById('summaryDiscount').innerHTML = discount > 0 ? 
+                    `<span class="text-danger">-${formatCurrency(discount)}</span>` : 
+                    '<span class="text-success">R$ 0,00</span>';
+
+                // Links
+                document.getElementById('editLink').href = `/Sales/Edit/${sale.Id}`;
+                document.getElementById('customerLink').href = `/Customers/Details/${sale.CustomerId}`;
+                document.getElementById('vehicleLink').href = `/Vehicles/Details/${sale.VehicleId}`;
+                document.getElementById('dealershipLink').href = `/Dealerships/Details/${sale.DealershipId}`;
+                
+                // Configurar botão de exclusão
+                const deleteButton = document.getElementById('deleteButton');
+                deleteButton.addEventListener('click', function() {
+                    document.getElementById('deleteSaleProtocol').textContent = sale.Protocol;
+                    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+                    modal.show();
+                });
+
+                // Configurar confirmação de exclusão
+                document.getElementById('confirmDelete').addEventListener('click', async function() {
+                    try {
+                        const response = await fetch(`/api/sales/${sale.Id}`, {
+                            method: 'DELETE',
+                            credentials: 'same-origin'
+                        });
+
+                        if (response.ok) {
+                            // Fechar modal
+                            bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+                            
+                            // Mostrar sucesso
+                            showToast('Venda excluída com sucesso!', 'success');
+                            
+                            // Redirecionar após um tempo
+                            setTimeout(() => {
+                                window.location.href = '/Sales';
+                            }, 2000);
+                        } else {
+                            const errorData = await response.json().catch(() => ({}));
+                            showToast(errorData.error || 'Erro ao excluir venda', 'error');
+                        }
+                    } catch (error) {
+                        console.error('Erro ao excluir venda:', error);
+                        showToast('Erro ao excluir venda', 'error');
+                    }
+                });
+            }
+
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('pt-BR');
+            }
+
+            function formatCurrency(value) {
+                return new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(value);
+            }
+
+            function showError() {
+                document.getElementById('loadingIndicator').innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                        <h4 class="text-danger">Erro ao carregar dados</h4>
+                        <p class="text-muted">Não foi possível carregar os detalhes da venda</p>
+                        <a href="/Sales" class="btn btn-primary">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar à Lista
+                        </a>
+                    </div>
+                `;
+            }
+
+            function showToast(message, type) {
+                // Criar toast dinamicamente
+                const toastHtml = `
+                    <div class="toast align-items-center text-white ${type === 'success' ? 'bg-success' : 'bg-danger'} border-0" role="alert">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="fas ${type === 'success' ? 'fa-check' : 'fa-exclamation-triangle'} me-2"></i>
+                                ${message}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                        </div>
+                    </div>
+                `;
+                
+                // Adicionar ao container de toasts (criar se não existir)
+                let toastContainer = document.getElementById('toast-container');
+                if (!toastContainer) {
+                    toastContainer = document.createElement('div');
+                    toastContainer.id = 'toast-container';
+                    toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+                    document.body.appendChild(toastContainer);
+                }
+                
+                toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+                
+                // Inicializar e mostrar o toast
+                const toastElement = toastContainer.lastElementChild;
+                const toast = new bootstrap.Toast(toastElement);
+                toast.show();
+                
+                // Remover o elemento após esconder
+                toastElement.addEventListener('hidden.bs.toast', () => {
+                    toastElement.remove();
+                });
+            }
+        });
+    </script>
+}
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Confirmar Exclusão
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0 me-3">
+                        <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+                    </div>
+                    <div>
+                        <h6>Tem certeza que deseja excluir esta venda?</h6>
+                        <p class="mb-0">
+                            A venda <strong id="deleteSaleProtocol"></strong> será excluída permanentemente.
+                            <br><span class="text-info">Nota: O veículo voltará a ficar disponível para venda.</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>
+                    Cancelar
+                </button>
+                <button type="button" id="confirmDelete" class="btn btn-danger">
+                    <i class="fas fa-trash me-2"></i>
+                    Excluir Venda
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

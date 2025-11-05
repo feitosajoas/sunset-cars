@@ -1,0 +1,335 @@
+@{
+    ViewData["Title"] = "Nova Concessionária";
+}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1"><i class="fas fa-building-plus text-primary me-2"></i>Nova Concessionária</h2>
+            <p class="text-muted mb-0">Cadastre uma nova concessionária</p>
+        </div>
+        <a href="/Dealerships" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-2"></i>Voltar</a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-building me-2"></i>Dados da Concessionária</h5>
+                </div>
+                <div class="card-body">
+                    <div id="error-messages" class="alert alert-danger d-none"></div>
+                    <div id="success-message" class="alert alert-success d-none"></div>
+
+                    <form id="formCriarConcessionaria">
+
+                        <div class="form-floating mb-3">
+                            <input id="name" name="Name" class="form-control" placeholder="Nome Completo" required />
+                            <label for="name">Nome <span class="text-danger">*</span></label>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-floating mb-3">
+                                    <input id="address" name="Address" class="form-control" placeholder="Endereço" required />
+                                    <label for="address">Endereço <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating mb-3">
+                                    <input id="zipCode" name="ZipCode" class="form-control" placeholder="CEP" required />
+                                    <label for="zipCode">CEP <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input id="city" name="City" class="form-control" placeholder="Cidade" required />
+                                    <label for="city">Cidade <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-floating mb-3">
+                                    <input id="state" name="State" class="form-control" placeholder="Estado" required />
+                                    <label for="state">Estado <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating mb-3">
+                                    <input id="phone" name="Phone" class="form-control" placeholder="Telefone" required />
+                                    <label for="phone">Telefone <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-floating mb-3">
+                                    <input id="email" name="Email" class="form-control" type="email" placeholder="E-mail" required />
+                                    <label for="email">E-mail <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating mb-3">
+                                    <input id="maxCapacity" name="MaxCapacity" class="form-control" type="number" min="1" placeholder="Capacidade" required />
+                                    <label for="maxCapacity">Capacidade <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="/Dealerships" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="submitButton">
+                                <i class="fas fa-save me-2"></i>Salvar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('formCriarConcessionaria');
+            if (!form) {
+                return;
+            }
+
+            // Busca endereço por CEP
+            document.getElementById('zipCode').addEventListener('blur', function() {
+                const cep = this.value;
+                if (!cep) return;
+
+                fetch(`/api/dealerships/cep/${encodeURIComponent(cep)}`, {
+                    credentials: 'same-origin'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    }
+                    throw new Error('CEP não encontrado');
+                })
+                .then(data => {
+                    document.getElementById('city').value = data.city || '';
+                    document.getElementById('state').value = data.state || '';
+                    if (data.street) {
+                        document.getElementById('address').value = data.street;
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar CEP:', error);
+                });
+            });
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const data = {
+                    Name: document.getElementById('name').value,
+                    Address: document.getElementById('address').value,
+                    ZipCode: document.getElementById('zipCode').value,
+                    City: document.getElementById('city').value,
+                    State: document.getElementById('state').value,
+                    Phone: document.getElementById('phone').value,
+                    Email: document.getElementById('email').value,
+                    MaxCapacity: parseInt(document.getElementById('maxCapacity').value)
+                };
+
+                const errorMessages = document.getElementById('error-messages');
+                const successMessage = document.getElementById('success-message');
+                
+                if (errorMessages) {
+                    errorMessages.classList.add('d-none');
+                    errorMessages.innerHTML = '';
+                }
+                if (successMessage) {
+                    successMessage.classList.add('d-none');
+                    successMessage.textContent = '';
+                }
+                
+                document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+                document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+
+                const submitButton = document.getElementById('submitButton');
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Salvando...';
+                }
+
+                fetch('/api/dealerships', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data),
+                    credentials: 'same-origin'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json().then(data => data).catch(() => ({ success: true }));
+                    } else if (response.status === 400) {
+                        return response.json().then(data => {
+                            return Promise.reject({
+                                type: 'validation',
+                                status: 400,
+                                data: data
+                            });
+                        }).catch(() => {
+                            return Promise.reject({
+                                type: 'error',
+                                status: 400,
+                                message: 'Dados inválidos'
+                            });
+                        });
+                    } else if (response.status === 401) {
+                        window.location.href = '/Identity/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
+                        return;
+                    } else if (response.status >= 500) {
+                        return Promise.reject({
+                            type: 'error',
+                            status: response.status,
+                            message: 'Erro interno do servidor. Tente novamente mais tarde.'
+                        });
+                    } else {
+                        return Promise.reject({
+                            type: 'error',
+                            status: response.status,
+                            message: `Erro inesperado: ${response.status} ${response.statusText}`
+                        });
+                    }
+                })
+                .then(result => {
+                    const dealershipName = result.Name || document.getElementById('name').value;
+                    
+                    // Mostrar toast de sucesso
+                    showToast(`Concessionária "${dealershipName}" criada com sucesso!`, 'success');
+                    
+                    // Mostrar também alert de sucesso
+                    const successMessage = document.getElementById('success-message');
+                    if (successMessage) {
+                        successMessage.innerHTML = `
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Sucesso!</strong> Concessionária "${dealershipName}" foi criada com sucesso!
+                            <br><small class="mt-1 d-block">Redirecionando em 3 segundos...</small>
+                        `;
+                        successMessage.classList.remove('d-none');
+                        successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    
+                    const form = document.getElementById('formCriarConcessionaria');
+                    if (form) {
+                        form.reset();
+                    }
+                    
+                    setTimeout(() => {
+                        window.location.href = '/Dealerships';
+                    }, 3000);
+                })
+                .finally(() => {
+                    const submitButton = document.getElementById('submitButton');
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<i class="fas fa-save me-2"></i>Salvar';
+                    }
+                })
+                .catch(error => {
+                    const errorMessages = document.getElementById('error-messages');
+                    if (!errorMessages) return;
+                    
+                    if (error.type === 'validation' && error.data) {
+                        if (error.data.error) {
+                            errorMessages.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>${error.data.error}`;
+                        }
+                        else if (error.data.errors) {
+                            let errorHtml = '<ul class="mb-0">';
+                            for (const field in error.data.errors) {
+                                error.data.errors[field].forEach(msg => {
+                                    errorHtml += `<li><strong>${field}:</strong> ${msg}</li>`;
+                                });
+                                
+                                const fieldElement = document.getElementById(field.toLowerCase());
+                                if (fieldElement) {
+                                    fieldElement.classList.add('is-invalid');
+                                    const feedback = fieldElement.parentElement.querySelector('.invalid-feedback');
+                                    if (feedback) {
+                                        feedback.textContent = error.data.errors[field][0];
+                                    }
+                                }
+                            }
+                            errorHtml += '</ul>';
+                            errorMessages.innerHTML = errorHtml;
+                        }
+                        else {
+                            errorMessages.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Dados inválidos. Verifique os campos e tente novamente.';
+                        }
+                    } else if (error.type === 'error') {
+                        let iconClass = 'fas fa-exclamation-triangle';
+                        if (error.status >= 500) {
+                            iconClass = 'fas fa-server';
+                        }
+                        
+                        errorMessages.innerHTML = `<i class="${iconClass} me-2"></i>${error.message}`;
+                    } else {
+                        const message = error.message || 'Erro de conexão. Verifique sua internet e tente novamente.';
+                        errorMessages.innerHTML = `<i class="fas fa-wifi me-2"></i>${message}`;
+                    }
+                    
+                    errorMessages.classList.remove('d-none');
+                    errorMessages.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                });
+            });
+
+            // Função para mostrar toast
+            function showToast(message, type) {
+                // Criar toast dinamicamente
+                const toastHtml = `
+                    <div class="toast align-items-center text-white ${type === 'success' ? 'bg-success' : 'bg-danger'} border-0" role="alert">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="fas ${type === 'success' ? 'fa-check' : 'fa-exclamation-triangle'} me-2"></i>
+                                ${message}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                        </div>
+                    </div>
+                `;
+                
+                // Adicionar ao container de toasts (criar se não existir)
+                let toastContainer = document.getElementById('toast-container');
+                if (!toastContainer) {
+                    toastContainer = document.createElement('div');
+                    toastContainer.id = 'toast-container';
+                    toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+                    document.body.appendChild(toastContainer);
+                }
+                
+                toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+                
+                // Inicializar e mostrar o toast
+                const toastElement = toastContainer.lastElementChild;
+                const toast = new bootstrap.Toast(toastElement);
+                toast.show();
+                
+                // Remover o elemento após esconder
+                toastElement.addEventListener('hidden.bs.toast', () => {
+                    toastElement.remove();
+                });
+            }
+        });
+    </script>
+}

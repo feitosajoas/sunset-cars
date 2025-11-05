@@ -1,0 +1,399 @@
+@{
+    ViewData["Title"] = "Novo Fabricante";
+}
+
+<div class="container-fluid">
+    <!-- Header da Página -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="fas fa-plus-circle text-success me-2"></i>
+                        Novo Fabricante
+                    </h2>
+                    <p class="text-muted mb-0">Adicione um novo fabricante ao sistema</p>
+                </div>
+                <div>
+                    <a href="/Manufacturers" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Voltar à Lista
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulário -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-industry me-2"></i>
+                        Informações do Fabricante
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="error-messages" class="alert alert-danger d-none"></div>
+                    <div id="success-message" class="alert alert-success d-none"></div>
+
+                    <form id="formCriarFabricante">
+
+                        <!-- Informações Básicas -->
+                        <div class="mb-4">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Informações Básicas
+                            </h6>
+
+                            <div class="form-floating mb-3">
+                                <input id="name" name="Name" class="form-control" placeholder="Nome" required />
+                                <label for="name">Nome <span class="text-danger">*</span></label>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-floating mb-3">
+                                        <input id="country" name="Country" class="form-control" placeholder="País" required />
+                                        <label for="country">País <span class="text-danger">*</span></label>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating mb-3">
+                                        <input id="foundedYear" name="FoundedYear" class="form-control" placeholder="Ano de Fundação" 
+                                               type="number" min="1800" max="2100" required />
+                                        <label for="foundedYear">Ano de Fundação <span class="text-danger">*</span></label>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Informações Adicionais -->
+                        <div class="mb-4">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-globe me-2"></i>
+                                Informações Adicionais
+                            </h6>
+
+                            <div class="form-floating mb-4">
+                                <input id="website" name="Website" class="form-control" placeholder="Website" type="url" />
+                                <label for="website">Website</label>
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+
+                        <!-- Botões de Ação -->
+                        <div class="d-flex justify-content-between pt-3 border-top">
+                            <a href="/Manufacturers" class="btn btn-sm btn-outline-secondary btn-lg">
+                                <i class="fas fa-times me-2"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-sm btn-success btn-lg" id="submitButton">
+                                <i class="fas fa-save me-2"></i>
+                                Salvar Fabricante
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Card de Ajuda -->
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Dicas de Preenchimento
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Nome:</strong> Nome oficial do fabricante
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>País:</strong> País de origem do fabricante
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Ano Fundação:</strong> Ano de criação da empresa
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Website:</strong> Site oficial (opcional)
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('formCriarFabricante');
+            if (!form) {
+                return;
+            }
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const data = {
+                    Name: document.getElementById('name').value,
+                    Country: document.getElementById('country').value,
+                    FoundedYear: parseInt(document.getElementById('foundedYear').value),
+                    Website: document.getElementById('website').value
+                };
+
+                const errorMessages = document.getElementById('error-messages');
+                const successMessage = document.getElementById('success-message');
+                
+                if (errorMessages) {
+                    errorMessages.classList.add('d-none');
+                    errorMessages.innerHTML = '';
+                }
+                if (successMessage) {
+                    successMessage.classList.add('d-none');
+                    successMessage.textContent = '';
+                }
+                
+                document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+                document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+
+                const submitButton = document.getElementById('submitButton');
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Salvando...';
+                }
+
+                fetch('/api/manufacturers', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data),
+                    credentials: 'same-origin'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json().then(data => data).catch(() => ({ success: true }));
+                    } else if (response.status === 400) {
+                        return response.json().then(data => {
+                            return Promise.reject({
+                                type: 'validation',
+                                status: 400,
+                                data: data
+                            });
+                        }).catch(() => {
+                            return Promise.reject({
+                                type: 'error',
+                                status: 400,
+                                message: 'Dados inválidos'
+                            });
+                        });
+                    } else if (response.status === 401) {
+                        window.location.href = '/Identity/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
+                        return;
+                    } else if (response.status >= 500) {
+                        return Promise.reject({
+                            type: 'error',
+                            status: response.status,
+                            message: 'Erro interno do servidor. Tente novamente mais tarde.'
+                        });
+                    } else {
+                        return Promise.reject({
+                            type: 'error',
+                            status: response.status,
+                            message: `Erro inesperado: ${response.status} ${response.statusText}`
+                        });
+                    }
+                })
+                .then(result => {
+                    const manufacturerName = result.Name || document.getElementById('name').value;
+                    
+                    // Mostrar toast de sucesso
+                    showToast(`Fabricante "${manufacturerName}" criado com sucesso!`, 'success');
+                    
+                    // Mostrar também alert de sucesso
+                    const successMessage = document.getElementById('success-message');
+                    if (successMessage) {
+                        successMessage.innerHTML = `
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Sucesso!</strong> Fabricante "${manufacturerName}" foi criado com sucesso!
+                            <br><small class="mt-1 d-block">Redirecionando em 3 segundos...</small>
+                        `;
+                        successMessage.classList.remove('d-none');
+                        successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    
+                    const form = document.getElementById('formCriarFabricante');
+                    if (form) {
+                        form.reset();
+                    }
+                    
+                    setTimeout(() => {
+                        window.location.href = '/Manufacturers';
+                    }, 3000);
+                })
+                .finally(() => {
+                    const submitButton = document.getElementById('submitButton');
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<i class="fas fa-save me-2"></i>Salvar Fabricante';
+                    }
+                })
+                .catch(error => {
+                    const errorMessages = document.getElementById('error-messages');
+                    if (!errorMessages) return;
+                    
+                    if (error.type === 'validation' && error.data) {
+                        // Primeiro verifica se há uma mensagem de erro específica da API
+                        if (error.data.error) {
+                            errorMessages.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>${error.data.error}`;
+                        }
+                        // Se não há mensagem específica, verifica se há erros de validação por campo
+                        else if (error.data.errors) {
+                            let errorHtml = '<ul class="mb-0">';
+                            for (const field in error.data.errors) {
+                                error.data.errors[field].forEach(msg => {
+                                    errorHtml += `<li><strong>${field}:</strong> ${msg}</li>`;
+                                });
+                                
+                                const fieldElement = document.getElementById(field.toLowerCase());
+                                if (fieldElement) {
+                                    fieldElement.classList.add('is-invalid');
+                                    const feedback = fieldElement.parentElement.querySelector('.invalid-feedback');
+                                    if (feedback) {
+                                        feedback.textContent = error.data.errors[field][0];
+                                    }
+                                }
+                            }
+                            errorHtml += '</ul>';
+                            errorMessages.innerHTML = errorHtml;
+                        }
+                        // Se não há nem mensagem específica nem erros de campo, usa mensagem genérica
+                        else {
+                            errorMessages.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Dados inválidos. Verifique os campos e tente novamente.';
+                        }
+                    } else if (error.type === 'error') {
+                        let iconClass = 'fas fa-exclamation-triangle';
+                        if (error.status >= 500) {
+                            iconClass = 'fas fa-server';
+                        }
+                        
+                        errorMessages.innerHTML = `<i class="${iconClass} me-2"></i>${error.message}`;
+                    } else {
+                        const message = error.message || 'Erro de conexão. Verifique sua internet e tente novamente.';
+                        errorMessages.innerHTML = `<i class="fas fa-wifi me-2"></i>${message}`;
+                    }
+                    
+                    errorMessages.classList.remove('d-none');
+                    errorMessages.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                });
+            });
+
+            // Auto-focus no primeiro campo
+            document.getElementById('name').focus();
+
+            // Função para mostrar toast
+            function showToast(message, type) {
+                // Criar toast dinamicamente
+                const toastHtml = `
+                    <div class="toast align-items-center text-white ${type === 'success' ? 'bg-success' : 'bg-danger'} border-0" role="alert">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="fas ${type === 'success' ? 'fa-check' : 'fa-exclamation-triangle'} me-2"></i>
+                                ${message}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                        </div>
+                    </div>
+                `;
+                
+                // Adicionar ao container de toasts (criar se não existir)
+                let toastContainer = document.getElementById('toast-container');
+                if (!toastContainer) {
+                    toastContainer = document.createElement('div');
+                    toastContainer.id = 'toast-container';
+                    toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+                    document.body.appendChild(toastContainer);
+                }
+                
+                toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+                
+                // Inicializar e mostrar o toast
+                const toastElement = toastContainer.lastElementChild;
+                const toast = new bootstrap.Toast(toastElement);
+                toast.show();
+                
+                // Remover o elemento após esconder
+                toastElement.addEventListener('hidden.bs.toast', () => {
+                    toastElement.remove();
+                });
+            }
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        .form-floating>.form-control:focus~label,
+        .form-floating>.form-control:not(:placeholder-shown)~label {
+            opacity: .65;
+            transform: scale(.85) translateY(-0.5rem) translateX(0.15rem);
+        }
+
+        .form-floating>.form-select~label {
+            opacity: .65;
+            transform: scale(.85) translateY(-0.5rem) translateX(0.15rem);
+        }
+
+        .card {
+            border: none;
+            border-radius: 0.75rem;
+        }
+
+        .card-header {
+            border-radius: 0.75rem 0.75rem 0 0 !important;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+        }
+
+        .btn {
+            border-radius: 0.5rem;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            transition: all 0.2s ease;
+        }
+
+        h6 {
+            font-weight: 600;
+            letter-spacing: 0.025em;
+        }
+    </style>
+}

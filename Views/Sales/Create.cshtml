@@ -1,0 +1,779 @@
+@{
+    ViewData["Title"] = "Nova Venda";
+}
+
+<div class="container-fluid">
+    <!-- Header da Página -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="fas fa-plus-circle text-success me-2"></i>
+                        Nova Venda
+                    </h2>
+                    <p class="text-muted mb-0">Registre uma nova venda no sistema</p>
+                </div>
+                <div>
+                    <a href="/Sales" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Voltar à Lista
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulário -->
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-handshake me-2"></i>
+                        Informações da Venda
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="error-messages" class="alert alert-danger d-none"></div>
+                    <div id="success-message" class="alert alert-success d-none"></div>
+
+                    <form id="formCriarVenda">
+
+                        <!-- Informações da Transação -->
+                        <div class="mb-4">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-building me-2"></i>
+                                Local da Venda
+                            </h6>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-floating mb-3">
+                                        <select id="dealershipId" name="DealershipId" class="form-select" required>
+                                            <option value="">Selecione a Concessionária</option>
+                                        </select>
+                                        <label for="dealershipId">Concessionária <span class="text-danger">*</span></label>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating mb-3">
+                                        <input id="saleDate" name="SaleDate" class="form-control" type="date" required />
+                                        <label for="saleDate">Data da Venda <span class="text-danger">*</span></label>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Seleção do Veículo -->
+                        <div class="mb-4">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-car me-2"></i>
+                                Veículo
+                            </h6>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-floating mb-3">
+                                        <select id="manufacturerId" name="ManufacturerId" class="form-select" required>
+                                            <option value="">Selecione o Fabricante</option>
+                                        </select>
+                                        <label for="manufacturerId">Fabricante <span class="text-danger">*</span></label>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating mb-3">
+                                        <input id="vehicleSearch" class="form-control" type="text" placeholder="Digite para pesquisar..." disabled>
+                                        <label for="vehicleSearch">Pesquisar Modelo</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="form-floating mb-3">
+                                        <select id="vehicleId" name="VehicleId" class="form-select" required disabled>
+                                            <option value="">Primeiro selecione um fabricante</option>
+                                        </select>
+                                        <label for="vehicleId">Veículo <span class="text-danger">*</span></label>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Info do Veículo Selecionado -->
+                            <div id="vehicleInfo" class="alert alert-info d-none">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <strong>Modelo:</strong> <span id="vehicleModel">-</span><br>
+                                        <strong>Ano:</strong> <span id="vehicleYear">-</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <strong>Preço Tabela:</strong> <span id="vehiclePrice" class="text-success fw-bold">-</span><br>
+                                        <strong>Fabricante:</strong> <span id="vehicleManufacturer">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Informações do Cliente -->
+                        <div class="mb-4">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-user me-2"></i>
+                                Cliente
+                            </h6>
+
+                            <div class="row">
+                                <div class="col-md-10">
+                                    <div class="form-floating mb-3">
+                                        <select id="customerId" name="CustomerId" class="form-select" required>
+                                            <option value="">Selecione o Cliente</option>
+                                        </select>
+                                        <label for="customerId">Cliente <span class="text-danger">*</span></label>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <a href="/Customers/Create" target="_blank" 
+                                        class="btn btn-outline-primary w-100 h-100 d-flex align-items-center justify-content-center"
+                                        title="Cadastrar Novo Cliente">
+                                        <i class="fas fa-user-plus"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Valor da Venda -->
+                        <div class="mb-4">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-dollar-sign me-2"></i>
+                                Valor
+                            </h6>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-floating mb-3">
+                                        <input id="salePrice" name="SalePrice" class="form-control" type="number" 
+                                            step="0.01" min="0" required />
+                                        <label for="salePrice">Preço de Venda (R$) <span class="text-danger">*</span></label>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <div id="priceAlert" class="alert alert-warning d-none">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>Atenção:</strong> O preço de venda não pode ser maior que o preço de tabela do veículo.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botões de Ação -->
+                        <div class="d-flex justify-content-between pt-3 border-top">
+                            <a href="/Sales" class="btn btn-sm btn-outline-secondary btn-lg">
+                                <i class="fas fa-times me-2"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-sm btn-success btn-lg" id="submitButton">
+                                <i class="fas fa-save me-2"></i>
+                                Registrar Venda
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Card de Ajuda -->
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Dicas de Preenchimento
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Concessionária:</strong> Local onde a venda foi realizada
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Data:</strong> Data real da transação
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Fabricante:</strong> Obrigatório para habilitar seleção de veículos
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Veículo:</strong> Use a pesquisa para filtrar por modelo
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Cliente:</strong> Cadastre novos clientes se necessário
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    <strong>Preço:</strong> Não pode exceder o valor de tabela
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('formCriarVenda');
+            if (!form) {
+                return;
+            }
+
+
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('saleDate').value = today;
+
+
+            loadVehicles()
+                .then(() => Promise.all([loadDealerships(), loadCustomers(), loadManufacturers()]));
+
+
+            document.getElementById('manufacturerId').addEventListener('change', handleManufacturerChange);
+            document.getElementById('vehicleId').addEventListener('change', handleVehicleChange);
+            document.getElementById('salePrice').addEventListener('input', handlePriceChange);
+            document.getElementById('vehicleSearch').addEventListener('input', handleVehicleSearch);
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const manufacturerId = document.getElementById('manufacturerId').value;
+                const vehicleId = document.getElementById('vehicleId').value;
+                
+                if (!manufacturerId) {
+                    document.getElementById('manufacturerId').classList.add('is-invalid');
+                    document.getElementById('manufacturerId').parentElement.querySelector('.invalid-feedback').textContent = 'Selecione um fabricante primeiro.';
+                    return;
+                }
+                
+                if (!vehicleId) {
+                    document.getElementById('vehicleId').classList.add('is-invalid');
+                    document.getElementById('vehicleId').parentElement.querySelector('.invalid-feedback').textContent = 'Selecione um veículo.';
+                    return;
+                }
+
+                const data = {
+                    DealershipId: parseInt(document.getElementById('dealershipId').value),
+                    VehicleId: parseInt(vehicleId),
+                    CustomerId: parseInt(document.getElementById('customerId').value),
+                    SaleDate: document.getElementById('saleDate').value,
+                    SalePrice: parseFloat(document.getElementById('salePrice').value)
+                };
+
+                const errorMessages = document.getElementById('error-messages');
+                const successMessage = document.getElementById('success-message');
+                
+                if (errorMessages) {
+                    errorMessages.classList.add('d-none');
+                    errorMessages.innerHTML = '';
+                }
+                if (successMessage) {
+                    successMessage.classList.add('d-none');
+                    successMessage.textContent = '';
+                }
+                
+                document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+                document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+
+                const submitButton = document.getElementById('submitButton');
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Registrando...';
+                }
+
+                fetch('/api/sales', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data),
+                    credentials: 'same-origin'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json().then(data => data).catch(() => ({ success: true }));
+                    } else if (response.status === 400) {
+                        return response.json().then(data => {
+                            return Promise.reject({
+                                type: 'validation',
+                                status: 400,
+                                data: data
+                            });
+                        }).catch(() => {
+                            return Promise.reject({
+                                type: 'error',
+                                status: 400,
+                                message: 'Dados inválidos'
+                            });
+                        });
+                    } else if (response.status === 401) {
+                        window.location.href = '/Identity/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
+                        return;
+                    } else if (response.status >= 500) {
+                        return Promise.reject({
+                            type: 'error',
+                            status: response.status,
+                            message: 'Erro interno do servidor. Tente novamente mais tarde.'
+                        });
+                    } else {
+                        return Promise.reject({
+                            type: 'error',
+                            status: response.status,
+                            message: `Erro inesperado: ${response.status} ${response.statusText}`
+                        });
+                    }
+                })
+                .then(result => {
+                    const successMessage = document.getElementById('success-message');
+                    const form = document.getElementById('formCriarVenda');
+                    
+                    if (successMessage) {
+                        const protocol = result.protocol || 'N/A';
+                        successMessage.innerHTML = `
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Sucesso!</strong> Venda registrada com sucesso!
+                            <br><small class="mt-1 d-block"><strong>Protocolo:</strong> ${protocol}</small>
+                            <br><small class="mt-1 d-block">Redirecionando em 3 segundos...</small>
+                        `;
+                        successMessage.classList.remove('d-none');
+                        successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    
+                    if (form) {
+                        form.reset();
+                        document.getElementById('saleDate').value = today;
+                        
+                        // Resetar estado dos campos de veículo
+                        document.getElementById('vehicleId').disabled = true;
+                        document.getElementById('vehicleSearch').disabled = true;
+                        document.getElementById('vehicleId').innerHTML = '<option value="">Primeiro selecione um fabricante</option>';
+                        document.getElementById('vehicleSearch').value = '';
+                        hideVehicleInfo();
+                    }
+                    
+                    setTimeout(() => {
+                        window.location.href = '/Sales';
+                    }, 3000);
+                })
+                .finally(() => {
+                    const submitButton = document.getElementById('submitButton');
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<i class="fas fa-save me-2"></i>Registrar Venda';
+                    }
+                })
+                .catch(error => {
+                    const errorMessages = document.getElementById('error-messages');
+                    if (!errorMessages) return;
+                    
+                    if (error.type === 'validation' && error.data) {
+
+                        if (error.data.error) {
+                            errorMessages.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>${error.data.error}`;
+                        }
+
+                        else if (error.data.validationErrors && error.data.validationErrors.length > 0) {
+                            let errorHtml = '<ul class="mb-0">';
+                            error.data.validationErrors.forEach(msg => {
+                                errorHtml += `<li>${msg}</li>`;
+                            });
+                            errorHtml += '</ul>';
+                            errorMessages.innerHTML = errorHtml;
+                        }
+
+                        else if (error.data.errors) {
+                            let errorHtml = '<ul class="mb-0">';
+                            for (const field in error.data.errors) {
+                                error.data.errors[field].forEach(msg => {
+                                    errorHtml += `<li><strong>${field}:</strong> ${msg}</li>`;
+                                });
+                                
+                                const fieldElement = document.getElementById(field.toLowerCase());
+                                if (fieldElement) {
+                                    fieldElement.classList.add('is-invalid');
+                                    const feedback = fieldElement.parentElement.querySelector('.invalid-feedback');
+                                    if (feedback) {
+                                        feedback.textContent = error.data.errors[field][0];
+                                    }
+                                }
+                            }
+                            errorHtml += '</ul>';
+                            errorMessages.innerHTML = errorHtml;
+                        }
+                        else {
+                            errorMessages.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Dados inválidos. Verifique os campos e tente novamente.';
+                        }
+                    } else if (error.type === 'error') {
+                        let iconClass = 'fas fa-exclamation-triangle';
+                        if (error.status >= 500) {
+                            iconClass = 'fas fa-server';
+                        }
+                        
+                        errorMessages.innerHTML = `<i class="${iconClass} me-2"></i>${error.message}`;
+                    } else {
+                        const message = error.message || 'Erro de conexão. Verifique sua internet e tente novamente.';
+                        errorMessages.innerHTML = `<i class="fas fa-wifi me-2"></i>${message}`;
+                    }
+                    
+                    errorMessages.classList.remove('d-none');
+                    errorMessages.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                });
+            });
+
+            async function loadDealerships() {
+                try {
+                    const response = await fetch('/api/dealerships', {
+                        credentials: 'same-origin'
+                    });
+
+                    if (response.ok) {
+                        const dealerships = await response.json();
+                        const select = document.getElementById('dealershipId');
+                        
+                        dealerships.forEach(dealership => {
+                            const option = document.createElement('option');
+                            option.value = dealership.Id;
+                            option.textContent = dealership.Name;
+                            select.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    // Error loading dealerships
+                }
+            }
+
+            async function loadManufacturers() {
+                try {
+                    const response = await fetch('/api/manufacturers', {
+                        credentials: 'same-origin'
+                    });
+
+                    if (response.ok) {
+                        const manufacturers = await response.json();
+                        const select = document.getElementById('manufacturerId');
+                        
+                        manufacturers.forEach(manufacturer => {
+                            const option = document.createElement('option');
+                            option.value = manufacturer.Id;
+                            option.textContent = manufacturer.Name;
+                            select.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    // Error loading manufacturers
+                }
+            }
+
+            async function loadCustomers() {
+                try {
+                    const response = await fetch('/api/customers', {
+                        credentials: 'same-origin'
+                    });
+
+                    if (response.ok) {
+                        const customers = await response.json();
+                        const select = document.getElementById('customerId');
+                        
+                        customers.forEach(customer => {
+                            const option = document.createElement('option');
+                            option.value = customer.Id;
+                            option.textContent = customer.Name;
+                            select.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    // Error loading customers
+                }
+            }
+
+
+
+            let allVehicles = [];
+
+            async function loadVehicles() {
+                try {
+                    const response = await fetch('/api/vehicles', {
+                        credentials: 'same-origin'
+                    });
+
+                    if (response.ok) {
+                        allVehicles = await response.json();
+                        // Não popular o select inicialmente, pois está desabilitado
+                    }
+                } catch (error) {
+                    // Error loading vehicles
+                }
+            }
+
+            function populateVehiclesSelect(vehicles) {
+                const select = document.getElementById('vehicleId');
+                select.innerHTML = '<option value="">Selecione um Veículo</option>';
+                
+                if (!vehicles || vehicles.length === 0) {
+                    select.innerHTML = '<option value="">Nenhum veículo disponível</option>';
+                    return;
+                }
+                
+                vehicles.forEach(vehicle => {
+                    const option = document.createElement('option');
+                    option.value = vehicle.Id;
+                    option.textContent = `${vehicle.ManufacturerName} ${vehicle.Model} (${vehicle.Year}) - ${formatCurrency(vehicle.Price)}`;
+                    option.dataset.price = vehicle.Price;
+                    option.dataset.model = vehicle.Model;
+                    option.dataset.year = vehicle.Year;
+                    option.dataset.manufacturerName = vehicle.ManufacturerName;
+                    select.appendChild(option);
+                });
+            }
+
+            function handleManufacturerChange() {
+                const manufacturerId = this.value;
+                const vehicleSelect = document.getElementById('vehicleId');
+                const vehicleSearch = document.getElementById('vehicleSearch');
+                
+                if (!vehicleSelect || !vehicleSearch) return;
+                
+                vehicleSearch.value = '';
+                hideVehicleInfo();
+
+                if (!manufacturerId) {
+                    vehicleSelect.disabled = true;
+                    vehicleSearch.disabled = true;
+                    vehicleSelect.innerHTML = '<option value="">Primeiro selecione um fabricante</option>';
+                    return;
+                }
+
+                vehicleSelect.disabled = false;
+                vehicleSearch.disabled = false;
+                filterVehiclesByManufacturer(manufacturerId);
+            }
+
+            function filterVehiclesByManufacturer(manufacturerId) {
+                if (!manufacturerId) {
+                    const vehicleSelect = document.getElementById('vehicleId');
+                    vehicleSelect.innerHTML = '<option value="">Primeiro selecione um fabricante</option>';
+                    return;
+                }
+
+                const filteredVehicles = allVehicles.filter(v => 
+                    parseInt(v.ManufacturerId) === parseInt(manufacturerId)
+                );
+                
+                populateVehiclesSelect(filteredVehicles);
+            }
+
+
+
+            function handleVehicleSearch() {
+                const searchTerm = this.value.toLowerCase().trim();
+                const manufacturerId = document.getElementById('manufacturerId').value;
+                
+                if (!manufacturerId || !allVehicles || allVehicles.length === 0) return;
+
+                let filteredVehicles = allVehicles;
+                
+                // Filtrar por fabricante se selecionado
+                if (manufacturerId) {
+                    filteredVehicles = allVehicles.filter(v => 
+                        parseInt(v.ManufacturerId) === parseInt(manufacturerId)
+                    );
+                }
+                
+                // Filtrar por termo de pesquisa
+                if (searchTerm) {
+                    filteredVehicles = filteredVehicles.filter(vehicle => {
+                        const model = (vehicle.Model || '').toLowerCase();
+                        const manufacturerName = (vehicle.ManufacturerName || '').toLowerCase();
+                        const year = (vehicle.Year || '').toString();
+                        
+                        return model.includes(searchTerm) || 
+                               manufacturerName.includes(searchTerm) ||
+                               year.includes(searchTerm);
+                    });
+                }
+
+                populateVehiclesSelect(filteredVehicles);
+                
+                // Se não há resultados da pesquisa, mostrar mensagem
+                if (searchTerm && filteredVehicles.length === 0) {
+                    const vehicleSelect = document.getElementById('vehicleId');
+                    if (vehicleSelect) {
+                        vehicleSelect.innerHTML = '<option value="">Nenhum veículo encontrado para "' + searchTerm + '"</option>';
+                    }
+                }
+            }
+
+            function handleVehicleChange() {
+                const vehicleId = this.value;
+                const selectedOption = this.options[this.selectedIndex];
+
+                if (!vehicleId) {
+                    hideVehicleInfo();
+                    return;
+                }
+
+                // Usar dados do dataset do option (mais eficiente)
+                if (selectedOption.dataset.price && selectedOption.dataset.model && selectedOption.dataset.year) {
+                    const basicVehicle = {
+                        Model: selectedOption.dataset.model,
+                        Year: selectedOption.dataset.year,
+                        Price: parseFloat(selectedOption.dataset.price),
+                        ManufacturerName: selectedOption.dataset.manufacturerName || 'N/A'
+                    };
+                    
+                    showVehicleInfo(basicVehicle);
+                    
+                    const salePriceInput = document.getElementById('salePrice');
+                    if (!salePriceInput.value) {
+                        salePriceInput.value = basicVehicle.Price;
+                    }
+                }
+            }
+
+            function showVehicleInfo(vehicle) {
+                const vehicleModel = document.getElementById('vehicleModel');
+                const vehicleYear = document.getElementById('vehicleYear');
+                const vehiclePrice = document.getElementById('vehiclePrice');
+                const vehicleManufacturer = document.getElementById('vehicleManufacturer');
+                const vehicleInfo = document.getElementById('vehicleInfo');
+
+                if (vehicleModel) vehicleModel.textContent = vehicle.Model;
+                if (vehicleYear) vehicleYear.textContent = vehicle.Year;
+                if (vehiclePrice) vehiclePrice.textContent = formatCurrency(vehicle.Price);
+                if (vehicleManufacturer) vehicleManufacturer.textContent = vehicle.ManufacturerName;
+                
+                if (vehicleInfo) {
+                    vehicleInfo.classList.remove('d-none');
+                    vehicleInfo.dataset.vehiclePrice = vehicle.Price;
+                }
+            }
+
+            function hideVehicleInfo() {
+                const vehicleInfo = document.getElementById('vehicleInfo');
+                const priceAlert = document.getElementById('priceAlert');
+                
+                if (vehicleInfo) {
+                    vehicleInfo.classList.add('d-none');
+                }
+                if (priceAlert) {
+                    priceAlert.classList.add('d-none');
+                }
+            }
+
+            function handlePriceChange() {
+                const salePrice = parseFloat(this.value);
+                const vehicleInfo = document.getElementById('vehicleInfo');
+                const priceAlert = document.getElementById('priceAlert');
+
+                if (!vehicleInfo || !priceAlert) return;
+
+                const vehiclePrice = parseFloat(vehicleInfo.dataset.vehiclePrice);
+
+                if (salePrice && vehiclePrice && salePrice > vehiclePrice) {
+                    priceAlert.classList.remove('d-none');
+                } else {
+                    priceAlert.classList.add('d-none');
+                }
+            }
+
+            function formatCurrency(value) {
+                return new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(value);
+            }
+
+
+            document.getElementById('dealershipId').focus();
+        });
+    </script>
+}
+
+@section Styles {
+    <style>
+        .form-floating>.form-control:focus~label,
+        .form-floating>.form-control:not(:placeholder-shown)~label {
+            opacity: .65;
+            transform: scale(.85) translateY(-0.5rem) translateX(0.15rem);
+        }
+
+        .form-floating>.form-select~label {
+            opacity: .65;
+            transform: scale(.85) translateY(-0.5rem) translateX(0.15rem);
+        }
+
+        .card {
+            border: none;
+            border-radius: 0.75rem;
+        }
+
+        .card-header {
+            border-radius: 0.75rem 0.75rem 0 0 !important;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+        }
+
+        .btn {
+            border-radius: 0.5rem;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            transition: all 0.2s ease;
+        }
+
+        h6 {
+            font-weight: 600;
+            letter-spacing: 0.025em;
+        }
+
+        #vehicleInfo {
+            border-left: 4px solid #17a2b8;
+        }
+
+        #priceAlert {
+            border-left: 4px solid #ffc107;
+        }
+
+        #vehicleSearch:disabled {
+            background-color: #f8f9fa;
+            opacity: 0.6;
+        }
+
+        #vehicleId:disabled {
+            background-color: #f8f9fa;
+            opacity: 0.6;
+        }
+    </style>
+}

@@ -1,0 +1,298 @@
+@{
+    ViewData["Title"] = "Editar Fabricante";
+}
+<!-- Loading Indicator -->
+<div id="loadingIndicator" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Carregando...</span>
+    </div>
+    <p class="mt-3 text-muted">Carregando dados do fabricante...</p>
+</div>
+
+<!-- Main Content -->
+<div id="manufacturerForm" class="d-none">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1"><i class="fas fa-edit text-warning me-2"></i>Editar Fabricante</h2>
+                <p class="text-muted mb-0">Atualize os dados do fabricante <span id="manufacturerIdDisplay" class="badge bg-secondary"></span></p>
+            </div>
+            <a href="/Manufacturers" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-2"></i>Voltar</a>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="fas fa-industry me-2"></i>Informações do Fabricante</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Alert para erros de validação -->
+                        <div id="validationErrors" class="alert alert-danger d-none">
+                            <ul id="errorsList" class="mb-0"></ul>
+                        </div>
+
+                        <form id="editManufacturerForm">
+                            <input type="hidden" id="manufacturerId" />
+
+                            <div class="form-floating mb-3">
+                                <input type="text" id="name" class="form-control" placeholder="Nome" required maxlength="100" />
+                                <label for="name">Nome <span class="text-danger">*</span></label>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-floating mb-3">
+                                        <input type="text" id="country" class="form-control" placeholder="País" required maxlength="50" />
+                                        <label for="country">País <span class="text-danger">*</span></label>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating mb-3">
+                                        <input type="number" id="foundedYear" class="form-control" placeholder="Ano de Fundação" 
+                                               min="1800" max="2100" />
+                                        <label for="foundedYear">Ano de Fundação</label>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-floating mb-3">
+                                <input type="url" id="website" class="form-control" placeholder="Website" maxlength="200" />
+                                <label for="website">Website</label>
+                                <div class="invalid-feedback"></div>
+                                <div class="form-text">Exemplo: https://www.exemplo.com</div>
+                            </div>
+
+                            <div class="form-check mb-4">
+                                <input type="checkbox" id="isActive" class="form-check-input" />
+                                <label for="isActive" class="form-check-label">
+                                    <i class="fas fa-check-circle text-success me-1"></i>Fabricante ativo
+                                </label>
+                                <div class="form-text">Fabricantes inativos não aparecem nas listas de seleção</div>
+                            </div>
+
+                            <div class="d-flex justify-content-between">
+                                <a href="/Manufacturers" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-2"></i>Cancelar
+                                </a>
+                                <button type="submit" class="btn btn-warning text-dark" id="saveButton">
+                                    <span class="spinner-border spinner-border-sm me-2 d-none" id="saveSpinner"></span>
+                                    <i class="fas fa-save me-2" id="saveIcon"></i>Salvar Alterações
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const manufacturerId = window.location.pathname.split('/').pop();
+            
+            if (!manufacturerId || manufacturerId === 'Edit') {
+                window.location.href = '/Manufacturers';
+                return;
+            }
+
+            loadManufacturerData(manufacturerId);
+            setupFormSubmission();
+
+            async function loadManufacturerData(id) {
+                try {
+                    const response = await fetch(`/api/manufacturers/${id}`, {
+                        credentials: 'same-origin'
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Fabricante não encontrado');
+                    }
+
+                    const manufacturer = await response.json();
+                    populateForm(manufacturer);
+                    
+                    document.getElementById('loadingIndicator').classList.add('d-none');
+                    document.getElementById('manufacturerForm').classList.remove('d-none');
+                } catch (error) {
+                    console.error('Erro ao carregar fabricante:', error);
+                    showError();
+                }
+            }
+
+            function populateForm(manufacturer) {
+                document.getElementById('manufacturerId').value = manufacturer.Id;
+                document.getElementById('manufacturerIdDisplay').textContent = `#${manufacturer.Id}`;
+                document.getElementById('name').value = manufacturer.Name || '';
+                document.getElementById('country').value = manufacturer.Country || '';
+                document.getElementById('foundedYear').value = manufacturer.FoundedYear || '';
+                document.getElementById('website').value = manufacturer.Website || '';
+                document.getElementById('isActive').checked = manufacturer.IsActive || false;
+            }
+
+            function setupFormSubmission() {
+                const form = document.getElementById('editManufacturerForm');
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    // Limpar erros anteriores
+                    clearValidationErrors();
+                    
+                    // Mostrar loading
+                    const saveButton = document.getElementById('saveButton');
+                    const saveSpinner = document.getElementById('saveSpinner');
+                    const saveIcon = document.getElementById('saveIcon');
+                    
+                    saveButton.disabled = true;
+                    saveSpinner.classList.remove('d-none');
+                    saveIcon.classList.add('d-none');
+
+                    try {
+                        const formData = {
+                            Id: parseInt(document.getElementById('manufacturerId').value),
+                            Name: document.getElementById('name').value.trim(),
+                            Country: document.getElementById('country').value.trim(),
+                            FoundedYear: document.getElementById('foundedYear').value ? 
+                                parseInt(document.getElementById('foundedYear').value) : null,
+                            Website: document.getElementById('website').value.trim() || null,
+                            IsActive: document.getElementById('isActive').checked
+                        };
+
+                        const response = await fetch(`/api/manufacturers/${formData.Id}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            credentials: 'same-origin',
+                            body: JSON.stringify(formData)
+                        });
+
+                        if (response.ok) {
+                            showToast('Fabricante atualizado com sucesso!', 'success');
+                            
+                            // Redirecionar após sucesso
+                            setTimeout(() => {
+                                window.location.href = '/Manufacturers';
+                            }, 2000);
+                        } else {
+                            const errorData = await response.json();
+                            
+                            if (response.status === 400) {
+                                // Erros de validação
+                                if (errorData.validationErrors) {
+                                    showValidationErrors(errorData.validationErrors);
+                                } else {
+                                    showToast(errorData.error || 'Erro de validação', 'error');
+                                }
+                            } else {
+                                showToast(errorData.error || 'Erro ao atualizar fabricante', 'error');
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Erro ao atualizar fabricante:', error);
+                        showToast('Erro de conexão ao atualizar fabricante', 'error');
+                    } finally {
+                        // Restaurar botão
+                        saveButton.disabled = false;
+                        saveSpinner.classList.add('d-none');
+                        saveIcon.classList.remove('d-none');
+                    }
+                });
+            }
+
+            function showValidationErrors(errors) {
+                const errorsList = document.getElementById('errorsList');
+                const validationErrors = document.getElementById('validationErrors');
+                
+                errorsList.innerHTML = '';
+                
+                // Limpar classes de erro dos campos
+                document.querySelectorAll('.form-control').forEach(field => {
+                    field.classList.remove('is-invalid');
+                });
+
+                for (const [field, messages] of Object.entries(errors)) {
+                    messages.forEach(message => {
+                        const li = document.createElement('li');
+                        li.textContent = message;
+                        errorsList.appendChild(li);
+                    });
+
+                    // Destacar campo com erro
+                    const fieldElement = document.getElementById(field.toLowerCase());
+                    if (fieldElement) {
+                        fieldElement.classList.add('is-invalid');
+                        const feedback = fieldElement.nextElementSibling?.nextElementSibling;
+                        if (feedback && feedback.classList.contains('invalid-feedback')) {
+                            feedback.textContent = messages[0];
+                        }
+                    }
+                }
+                
+                validationErrors.classList.remove('d-none');
+                validationErrors.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            function clearValidationErrors() {
+                document.getElementById('validationErrors').classList.add('d-none');
+                document.querySelectorAll('.form-control').forEach(field => {
+                    field.classList.remove('is-invalid');
+                });
+            }
+
+            function showError() {
+                document.getElementById('loadingIndicator').innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                        <h4 class="text-danger">Erro ao carregar dados</h4>
+                        <p class="text-muted">Não foi possível carregar os dados do fabricante</p>
+                        <a href="/Manufacturers" class="btn btn-primary">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar à Lista
+                        </a>
+                    </div>
+                `;
+            }
+
+            function showToast(message, type) {
+                // Criar toast dinamicamente
+                const toastHtml = `
+                    <div class="toast align-items-center text-white ${type === 'success' ? 'bg-success' : 'bg-danger'} border-0" role="alert">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="fas ${type === 'success' ? 'fa-check' : 'fa-exclamation-triangle'} me-2"></i>
+                                ${message}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                        </div>
+                    </div>
+                `;
+                
+                // Adicionar ao container de toasts (criar se não existir)
+                let toastContainer = document.getElementById('toast-container');
+                if (!toastContainer) {
+                    toastContainer = document.createElement('div');
+                    toastContainer.id = 'toast-container';
+                    toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+                    document.body.appendChild(toastContainer);
+                }
+                
+                toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+                
+                // Inicializar e mostrar o toast
+                const toastElement = toastContainer.lastElementChild;
+                const toast = new bootstrap.Toast(toastElement);
+                toast.show();
+                
+                // Remover o elemento após esconder
+                toastElement.addEventListener('hidden.bs.toast', () => {
+                    toastElement.remove();
+                });
+            }
+        });
+    </script>
+}

@@ -1,0 +1,495 @@
+@{
+    ViewData["Title"] = "Editar Venda";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-1"><i class="fas fa-edit text-warning me-2"></i>Editar Venda</h2>
+                <p class="text-muted mb-0">Atualize as informações da venda selecionada</p>
+            </div>
+            <div>
+                <a href="/Sales" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Voltar à Lista
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading state -->
+    <div id="loadingIndicator" class="text-center my-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+        <p class="mt-3 text-muted">Carregando dados da venda...</p>
+    </div>
+
+    <div id="editForm" class="row justify-content-center d-none">
+        <div class="col-lg-9">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0"><i class="fas fa-handshake me-2"></i>Informações da Venda</h5>
+                </div>
+                <div class="card-body">
+                    <form id="formEditarVenda">
+                        <input type="hidden" id="saleId" />
+                        <input type="hidden" id="protocol" />
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <select id="dealershipId" name="DealershipId" class="form-select" required>
+                                        <option value="">Selecione uma Concessionária</option>
+                                    </select>
+                                    <label for="dealershipId">Concessionária <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <select id="manufacturerId" class="form-select">
+                                        <option value="">Selecione um Fabricante</option>
+                                    </select>
+                                    <label for="manufacturerId">Fabricante (para filtrar veículos)</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-floating mb-3">
+                                    <select id="vehicleId" name="VehicleId" class="form-select" required>
+                                        <option value="">Selecione um Veículo</option>
+                                    </select>
+                                    <label for="vehicleId">Veículo <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating mb-3">
+                                    <input id="saleDate" name="SaleDate" class="form-control" type="date" required />
+                                    <label for="saleDate">Data da Venda <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <select id="customerId" name="CustomerId" class="form-select" required>
+                                <option value="">Selecione um Cliente</option>
+                            </select>
+                            <label for="customerId">Cliente <span class="text-danger">*</span></label>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-floating mb-3">
+                                    <input id="salePrice" name="SalePrice" class="form-control" type="number" step="0.01" min="0" required />
+                                    <label for="salePrice">Preço de Venda (R$) <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div>
+                                    <i class="fas text-info fa-info-circle me-2"></i>
+                                    <span class="text-info fw-bold">Protocolo:</span> <strong id="protocolDisplay">-</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between pt-3 border-top">
+                            <a href="/Sales" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-warning text-dark">
+                                <i class="fas fa-save me-2"></i>Salvar Alterações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.pathname);
+            const saleId = window.location.pathname.split('/').pop();
+            
+            if (!saleId || saleId === 'Edit') {
+                window.location.href = '/Sales';
+                return;
+            }
+
+            loadVehicles()
+                .then(() => Promise.all([loadDealerships(), loadCustomers(), loadManufacturers()]))
+                .then(() => loadSaleData(saleId))
+                .then(() => {
+                    document.getElementById('loadingIndicator').classList.add('d-none');
+                    document.getElementById('editForm').classList.remove('d-none');
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar dados:', error);
+                    showError();
+                });
+
+            const form = document.getElementById('formEditarVenda');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    updateSale();
+                });
+            }
+
+            document.getElementById('manufacturerId').addEventListener('change', function() {
+                filterVehiclesByManufacturer(this.value);
+            });
+
+            async function loadSaleData(id) {
+                try {
+                    const response = await fetch(`/api/sales/${id}`, {
+                        credentials: 'same-origin'
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Venda não encontrada');
+                    }
+
+                    const sale = await response.json();
+                    populateForm(sale);
+                } catch (error) {
+                    console.error('Erro ao carregar venda:', error);
+                    throw error;
+                }
+            }
+
+            async function loadDealerships() {
+                try {
+                    const response = await fetch('/api/dealerships', {
+                        credentials: 'same-origin'
+                    });
+
+                    if (response.ok) {
+                        const dealerships = await response.json();
+                        const select = document.getElementById('dealershipId');
+                        
+                        dealerships.forEach(dealership => {
+                            const option = document.createElement('option');
+                            option.value = dealership.Id;
+                            option.textContent = dealership.Name;
+                            select.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar concessionárias:', error);
+                }
+            }
+
+            async function loadCustomers() {
+                try {
+                    const response = await fetch('/api/customers', {
+                        credentials: 'same-origin'
+                    });
+
+                    if (response.ok) {
+                        const customers = await response.json();
+                        const select = document.getElementById('customerId');
+                        
+                        customers.forEach(customer => {
+                            const option = document.createElement('option');
+                            option.value = customer.Id;
+                            option.textContent = customer.Name;
+                            select.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar clientes:', error);
+                }
+            }
+
+            async function loadManufacturers() {
+                try {
+                    const response = await fetch('/api/manufacturers', {
+                        credentials: 'same-origin'
+                    });
+
+                    if (response.ok) {
+                        const manufacturers = await response.json();
+                        const select = document.getElementById('manufacturerId');
+                        
+                        manufacturers.forEach(manufacturer => {
+                            const option = document.createElement('option');
+                            option.value = manufacturer.Id;
+                            option.textContent = manufacturer.Name;
+                            select.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar fabricantes:', error);
+                }
+            }
+
+            let allVehicles = [];
+
+            async function loadVehicles() {
+                try {
+                    const response = await fetch('/api/vehicles', {
+                        credentials: 'same-origin'
+                    });
+
+                    if (response.ok) {
+                        allVehicles = await response.json();
+                        populateVehiclesSelect(allVehicles);
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar veículos:', error);
+                }
+            }
+
+            function populateVehiclesSelect(vehicles) {
+                const select = document.getElementById('vehicleId');
+                select.innerHTML = '<option value="">Selecione um Veículo</option>';
+                
+                vehicles.forEach(vehicle => {
+                    const option = document.createElement('option');
+                    option.value = vehicle.Id;
+                    option.textContent = `${vehicle.ManufacturerName} ${vehicle.Model} (${vehicle.Year}) - ${formatCurrency(vehicle.Price)}`;
+                    select.appendChild(option);
+                });
+            }
+
+            function filterVehiclesByManufacturer(manufacturerId) {
+                if (!manufacturerId) {
+                    populateVehiclesSelect(allVehicles);
+                    return;
+                }
+
+                const filteredVehicles = allVehicles.filter(v => 
+                    parseInt(v.ManufacturerId) === parseInt(manufacturerId)
+                );
+                populateVehiclesSelect(filteredVehicles);
+            }
+
+            function populateForm(sale) {
+                document.getElementById('saleId').value = sale.Id;
+                document.getElementById('protocol').value = sale.Protocol;
+                document.getElementById('protocolDisplay').textContent = sale.Protocol;
+                document.getElementById('dealershipId').value = sale.DealershipId || '';
+                document.getElementById('customerId').value = sale.CustomerId || '';
+                document.getElementById('salePrice').value = sale.SalePrice || '';
+                
+                if (sale.SaleDate) {
+                    const date = new Date(sale.SaleDate);
+                    const formattedDate = date.toISOString().split('T')[0];
+                    document.getElementById('saleDate').value = formattedDate;
+                }
+
+                setVehicleAndManufacturer(sale.VehicleId);
+            }
+
+            function setVehicleAndManufacturer(vehicleId) {
+                if (!vehicleId || allVehicles.length === 0) {
+                    return;
+                }
+
+                const selectedVehicle = allVehicles.find(v => parseInt(v.Id) === parseInt(vehicleId));
+
+                if (selectedVehicle) {
+                    const manufacturerId = selectedVehicle.ManufacturerId;
+                    document.getElementById('manufacturerId').value = manufacturerId;
+                    filterVehiclesByManufacturerAndSetVehicle(manufacturerId, vehicleId);
+                } else {
+                    populateVehiclesSelect(allVehicles);
+                    document.getElementById('vehicleId').value = vehicleId;
+                }
+            }
+
+            function filterVehiclesByManufacturerAndSetVehicle(manufacturerId, vehicleId) {
+                const filteredVehicles = allVehicles.filter(v => 
+                    parseInt(v.ManufacturerId) === parseInt(manufacturerId)
+                );
+                
+                populateVehiclesSelect(filteredVehicles);
+                
+                const vehicleSelect = document.getElementById('vehicleId');
+                vehicleSelect.value = vehicleId;
+                
+                if (vehicleSelect.value != vehicleId) {
+                    populateVehiclesSelect(allVehicles);
+                    vehicleSelect.value = vehicleId;
+                    if (vehicleSelect.value != vehicleId) {
+                        document.getElementById('manufacturerId').value = '';
+                    }
+                }
+            }
+
+            async function updateSale() {
+                const id = document.getElementById('saleId').value;
+                const data = {
+                    Id: parseInt(id),
+                    DealershipId: parseInt(document.getElementById('dealershipId').value),
+                    VehicleId: parseInt(document.getElementById('vehicleId').value),
+                    CustomerId: parseInt(document.getElementById('customerId').value),
+                    SaleDate: document.getElementById('saleDate').value,
+                    SalePrice: parseFloat(document.getElementById('salePrice').value)
+                };
+
+                document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+                document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+
+                const submitButton = document.querySelector('button[type="submit"]');
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Salvando...';
+                }
+
+                fetch(`/api/sales/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data),
+                    credentials: 'same-origin'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json().then(data => data).catch(() => ({ success: true }));
+                    } else if (response.status === 400) {
+                        return response.json().then(data => {
+                            return Promise.reject({
+                                type: 'validation',
+                                status: 400,
+                                data: data
+                            });
+                        }).catch(() => {
+                            return Promise.reject({
+                                type: 'error',
+                                status: 400,
+                                message: 'Dados inválidos'
+                            });
+                        });
+                    } else if (response.status === 401) {
+                        window.location.href = '/Identity/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
+                        return;
+                    } else if (response.status === 404) {
+                        return Promise.reject({
+                            type: 'error',
+                            status: 404,
+                            message: 'Venda não encontrada.'
+                        });
+                    } else if (response.status >= 500) {
+                        return Promise.reject({
+                            type: 'error',
+                            status: response.status,
+                            message: 'Erro interno do servidor. Tente novamente mais tarde.'
+                        });
+                    } else {
+                        return Promise.reject({
+                            type: 'error',
+                            status: response.status,
+                            message: `Erro inesperado: ${response.status} ${response.statusText}`
+                        });
+                    }
+                })
+                .then(result => {
+                    const protocol = result.Protocol || document.getElementById('protocol').value;
+                    showToast(`Venda "${protocol}" foi atualizada com sucesso!`, 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = '/Sales';
+                    }, 2000);
+                })
+                .catch(error => {
+                    if (error.type === 'validation' && error.data) {
+                        if (error.data.error) {
+                            showToast(error.data.error, 'error');
+                        } else if (error.data.errors) {
+                            for (const field in error.data.errors) {
+                                const fieldElement = document.getElementById(field.toLowerCase());
+                                if (fieldElement) {
+                                    fieldElement.classList.add('is-invalid');
+                                    const feedback = fieldElement.parentElement.querySelector('.invalid-feedback');
+                                    if (feedback) {
+                                        feedback.textContent = error.data.errors[field][0];
+                                    }
+                                }
+                            }
+                            showToast('Dados inválidos. Verifique os campos destacados.', 'error');
+                        } else {
+                            showToast('Dados inválidos. Verifique os campos e tente novamente.', 'error');
+                        }
+                    } else if (error.type === 'error') {
+                        showToast(error.message, 'error');
+                    } else {
+                        const message = error.message || 'Erro de conexão. Verifique sua internet e tente novamente.';
+                        showToast(message, 'error');
+                    }
+                })
+                .finally(() => {
+                    const submitButton = document.querySelector('button[type="submit"]');
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<i class="fas fa-save me-2"></i>Salvar Alterações';
+                    }
+                });
+            }
+
+            function formatCurrency(value) {
+                return new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(value);
+            }
+
+            function showError() {
+                document.getElementById('loadingIndicator').innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                        <h4 class="text-danger">Erro ao carregar dados</h4>
+                        <p class="text-muted">Não foi possível carregar os dados da venda</p>
+                        <a href="/Sales" class="btn btn-primary">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar à Lista
+                        </a>
+                    </div>
+                `;
+            }
+
+            function showToast(message, type) {
+                const toastHtml = `
+                    <div class="toast align-items-center text-white ${type === 'success' ? 'bg-success' : 'bg-danger'} border-0" role="alert">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="fas ${type === 'success' ? 'fa-check' : 'fa-exclamation-triangle'} me-2"></i>
+                                ${message}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                        </div>
+                    </div>
+                `;
+                
+                let toastContainer = document.getElementById('toast-container');
+                if (!toastContainer) {
+                    toastContainer = document.createElement('div');
+                    toastContainer.id = 'toast-container';
+                    toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+                    document.body.appendChild(toastContainer);
+                }
+                
+                toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+                
+                const toastElement = toastContainer.lastElementChild;
+                const toast = new bootstrap.Toast(toastElement);
+                toast.show();
+                
+                toastElement.addEventListener('hidden.bs.toast', () => {
+                    toastElement.remove();
+                });
+            }
+        });
+    </script>
+}

@@ -1,0 +1,162 @@
+@{
+    ViewData["Title"] = "Detalhes do Veículo";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-1"><i class="fas fa-eye text-info me-2"></i>Detalhes do Veículo</h2>
+                <p class="text-muted mb-0">Visualize as informações do veículo</p>
+            </div>
+            <div>
+                <a href="/Vehicles" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Voltar à Lista
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading state -->
+    <div id="loadingIndicator" class="text-center my-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+        <p class="mt-3 text-muted">Carregando detalhes do veículo...</p>
+    </div>
+
+    <div id="vehicleDetails" class="row justify-content-center d-none">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0" id="vehicleTitle">
+                        <i class="fas fa-car me-2"></i>Carregando...
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-3">ID</dt>
+                        <dd class="col-sm-9" id="vehicleId">#-</dd>
+
+                        <dt class="col-sm-3">Fabricante</dt>
+                        <dd class="col-sm-9" id="vehicleManufacturer">-</dd>
+
+                        <dt class="col-sm-3">Tipo</dt>
+                        <dd class="col-sm-9" id="vehicleType">-</dd>
+
+                        <dt class="col-sm-3">Preço</dt>
+                        <dd class="col-sm-9" id="vehiclePrice">-</dd>
+
+                        <dt class="col-sm-3">Descrição</dt>
+                        <dd class="col-sm-9" id="vehicleDescription">-</dd>
+
+                        <dt class="col-sm-3">Status</dt>
+                        <dd class="col-sm-9" id="vehicleStatus">-</dd>
+
+                        <dt class="col-sm-3">Criado em</dt>
+                        <dd class="col-sm-9" id="vehicleCreatedAt">-</dd>
+                    </dl>
+                </div>
+                <div class="card-footer d-flex justify-content-end gap-2">
+                    <a id="editLink" href="#" class="btn btn-warning text-dark">
+                        <i class="fas fa-edit me-2"></i>Editar
+                    </a>
+                    <a id="deleteLink" href="#" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Excluir
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const vehicleId = window.location.pathname.split('/').pop();
+            
+            if (!vehicleId || vehicleId === 'Details') {
+                window.location.href = '/Vehicles';
+                return;
+            }
+
+            loadVehicleDetails(vehicleId);
+
+            async function loadVehicleDetails(id) {
+                try {
+                    const response = await fetch(`/api/vehicles/${id}`, {
+                        credentials: 'same-origin'
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Veículo não encontrado');
+                    }
+
+                    const vehicle = await response.json();
+                    populateDetails(vehicle);
+                    
+                    document.getElementById('loadingIndicator').classList.add('d-none');
+                    document.getElementById('vehicleDetails').classList.remove('d-none');
+                } catch (error) {
+                    console.error('Erro ao carregar veículo:', error);
+                    showError();
+                }
+            }
+
+            function populateDetails(vehicle) {
+                document.getElementById('vehicleTitle').innerHTML = `
+                    <i class="fas fa-car me-2"></i>${vehicle.Model} (${vehicle.Year})
+                `;
+                document.getElementById('vehicleId').textContent = `#${vehicle.Id}`;
+                document.getElementById('vehicleManufacturer').textContent = vehicle.Manufacturer?.Name || vehicle.ManufacturerName || 'N/A';
+                document.getElementById('vehicleType').textContent = getTypeName(vehicle.Type);
+                document.getElementById('vehiclePrice').textContent = formatCurrency(vehicle.Price);
+                document.getElementById('vehicleDescription').textContent = vehicle.Description || '-';
+                document.getElementById('vehicleStatus').innerHTML = vehicle.IsActive ? 
+                    '<span class="badge bg-success"><i class="fas fa-check me-1"></i> Ativo</span>' :
+                    '<span class="badge bg-danger"><i class="fas fa-times me-1"></i> Inativo</span>';
+                document.getElementById('vehicleCreatedAt').textContent = formatDate(vehicle.CreatedAt);
+
+                // Atualizar links
+                document.getElementById('editLink').href = `/Vehicles/Edit/${vehicle.Id}`;
+                document.getElementById('deleteLink').href = `/Vehicles/Delete/${vehicle.Id}`;
+            }
+
+            function getTypeName(type) {
+                const typeNames = {
+                    1: 'Carro',
+                    2: 'Moto', 
+                    3: 'Caminhão',
+                    4: 'SUV',
+                    5: 'Pickup',
+                    6: 'Van'
+                };
+                return typeNames[type] || 'N/A';
+            }
+
+            function formatCurrency(value) {
+                return new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(value);
+            }
+
+            function formatDate(dateString) {
+                return new Date(dateString).toLocaleString('pt-BR');
+            }
+
+            function showError() {
+                document.getElementById('loadingIndicator').innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                        <h4 class="text-danger">Erro ao carregar dados</h4>
+                        <p class="text-muted">Não foi possível carregar os detalhes do veículo</p>
+                        <a href="/Vehicles" class="btn btn-primary">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar à Lista
+                        </a>
+                    </div>
+                `;
+            }
+        });
+    </script>
+}

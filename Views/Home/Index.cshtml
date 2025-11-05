@@ -1,0 +1,419 @@
+﻿@{
+    ViewData["Title"] = "Sunset Cars - Sistema de Gestão Automotiva";
+}
+
+<!-- Hero Section -->
+<section class="hero-section bg-gradient-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center min-vh-75">
+            <div class="col-lg-6">
+                <div class="hero-content">
+                    <h1 class="display-3 fw-bold mb-4">
+                        <i class="fas fa-car text-warning me-3"></i>
+                        Sunset Cars
+                    </h1>
+                    <p class="lead mb-4">
+                        Sistema completo de gestão automotiva para concessionárias. 
+                        Gerencie vendas, clientes, veículos e relatórios de forma eficiente e moderna.
+                    </p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="/Sales/Create" class="btn btn-warning btn-lg px-4 py-3">
+                            <i class="fas fa-plus-circle me-2"></i>
+                            Nova Venda
+                        </a>
+                        <a href="/Vehicles" class="btn btn-outline-light btn-lg px-4 py-3">
+                            <i class="fas fa-car me-2"></i>
+                            Ver Veículos
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="hero-image text-center">
+                    <div class="card bg-white shadow-lg border-0 rounded-4 p-4">
+                        <div class="card-body">
+                            <div class="row text-center g-4">
+                                <div class="col-6">
+                                    <div class="feature-stat">
+                                        <i class="fas fa-handshake fa-3x text-success mb-3"></i>
+                                        <h3 class="h4 text-dark">Vendas</h3>
+                                        <p class="text-muted mb-0">Gestão completa</p>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="feature-stat">
+                                        <i class="fas fa-users fa-3x text-info mb-3"></i>
+                                        <h3 class="h4 text-dark">Clientes</h3>
+                                        <p class="text-muted mb-0">Relacionamento</p>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="feature-stat">
+                                        <i class="fas fa-car fa-3x text-warning mb-3"></i>
+                                        <h3 class="h4 text-dark">Veículos</h3>
+                                        <p class="text-muted mb-0">Inventário</p>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="feature-stat">
+                                        <i class="fas fa-chart-bar fa-3x text-danger mb-3"></i>
+                                        <h3 class="h4 text-dark">Relatórios</h3>
+                                        <p class="text-muted mb-0">Análises</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section py-5 bg-light">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-12 text-center">
+                <h2 class="display-5 fw-bold text-dark mb-3">Recursos Principais</h2>
+                <p class="lead text-muted">Tudo que você precisa para gerenciar sua concessionária</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Gestão de Vendas -->
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body p-4 text-center">
+                        <div class="feature-icon bg-success bg-gradient rounded-circle d-inline-flex align-items-center justify-content-center mb-4">
+                            <i class="fas fa-handshake fa-2x text-white"></i>
+                        </div>
+                        <h5 class="card-title mb-3">Gestão de Vendas</h5>
+                        <p class="card-text text-muted">
+                            Registre vendas, controle protocolos e acompanhe o desempenho da equipe comercial.
+                        </p>
+                        <a href="/Sales" class="btn btn-outline-success">
+                            <i class="fas fa-arrow-right me-2"></i>Acessar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controle de Clientes -->
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body p-4 text-center">
+                        <div class="feature-icon bg-info bg-gradient rounded-circle d-inline-flex align-items-center justify-content-center mb-4">
+                            <i class="fas fa-users fa-2x text-white"></i>
+                        </div>
+                        <h5 class="card-title mb-3">Controle de Clientes</h5>
+                        <p class="card-text text-muted">
+                            Cadastre e gerencie informações de clientes com histórico completo de compras.
+                        </p>
+                        <a href="/Customers" class="btn btn-outline-info">
+                            <i class="fas fa-arrow-right me-2"></i>Acessar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventário de Veículos -->
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body p-4 text-center">
+                        <div class="feature-icon bg-warning bg-gradient rounded-circle d-inline-flex align-items-center justify-content-center mb-4">
+                            <i class="fas fa-car fa-2x text-white"></i>
+                        </div>
+                        <h5 class="card-title mb-3">Inventário de Veículos</h5>
+                        <p class="card-text text-muted">
+                            Controle completo do estoque de veículos com informações detalhadas e disponibilidade.
+                        </p>
+                        <a href="/Vehicles" class="btn btn-outline-warning">
+                            <i class="fas fa-arrow-right me-2"></i>Acessar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gestão de Fabricantes -->
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body p-4 text-center">
+                        <div class="feature-icon bg-primary bg-gradient rounded-circle d-inline-flex align-items-center justify-content-center mb-4">
+                            <i class="fas fa-industry fa-2x text-white"></i>
+                        </div>
+                        <h5 class="card-title mb-3">Gestão de Fabricantes</h5>
+                        <p class="card-text text-muted">
+                            Cadastre e organize informações sobre fabricantes e suas respectivas marcas.
+                        </p>
+                        <a href="/Manufacturers" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-right me-2"></i>Acessar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Concessionárias -->
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body p-4 text-center">
+                        <div class="feature-icon bg-secondary bg-gradient rounded-circle d-inline-flex align-items-center justify-content-center mb-4">
+                            <i class="fas fa-building fa-2x text-white"></i>
+                        </div>
+                        <h5 class="card-title mb-3">Concessionárias</h5>
+                        <p class="card-text text-muted">
+                            Gerencie informações das concessionárias e acompanhe o desempenho de cada unidade.
+                        </p>
+                        <a href="/Dealerships" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-right me-2"></i>Acessar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Relatórios -->
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body p-4 text-center">
+                        <div class="feature-icon bg-danger bg-gradient rounded-circle d-inline-flex align-items-center justify-content-center mb-4">
+                            <i class="fas fa-chart-bar fa-2x text-white"></i>
+                        </div>
+                        <h5 class="card-title mb-3">Relatórios e Análises</h5>
+                        <p class="card-text text-muted">
+                            Gere relatórios detalhados e obtenha insights valiosos sobre suas vendas e performance.
+                        </p>
+                        <a href="/Reports" class="btn btn-outline-danger">
+                            <i class="fas fa-arrow-right me-2"></i>Acessar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section py-5 bg-dark text-white">
+    <div class="container">
+        <div class="row text-center g-4" id="statsRow">
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-item">
+                    <i class="fas fa-handshake fa-3x text-success mb-3"></i>
+                    <h3 class="display-4 fw-bold mb-2" id="totalSales">---</h3>
+                    <p class="text-muted mb-0">Vendas Realizadas</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-item">
+                    <i class="fas fa-car fa-3x text-warning mb-3"></i>
+                    <h3 class="display-4 fw-bold mb-2" id="totalVehicles">---</h3>
+                    <p class="text-muted mb-0">Veículos Cadastrados</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-item">
+                    <i class="fas fa-users fa-3x text-info mb-3"></i>
+                    <h3 class="display-4 fw-bold mb-2" id="totalCustomers">---</h3>
+                    <p class="text-muted mb-0">Clientes Ativos</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-item">
+                    <i class="fas fa-dollar-sign fa-3x text-success mb-3"></i>
+                    <h3 class="display-4 fw-bold mb-2" id="totalRevenue">---</h3>
+                    <p class="text-muted mb-0">Faturamento Total</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section py-5 bg-gradient-primary text-white">
+    <div class="container">
+        <div class="row justify-content-center text-center">
+            <div class="col-lg-8">
+                <h2 class="display-5 fw-bold mb-4">Pronto para começar?</h2>
+                <p class="lead mb-5">
+                    Explore todas as funcionalidades do sistema e otimize a gestão da sua concessionária hoje mesmo.
+                </p>
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    <a href="/Sales" class="btn btn-warning btn-lg px-5 py-3">
+                        <i class="fas fa-tachometer-alt me-2"></i>
+                        Acessar Dashboard
+                    </a>
+                    <a href="/Sales/Create" class="btn btn-outline-light btn-lg px-5 py-3">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        Registrar Venda
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Styles {
+    <style>
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .min-vh-75 {
+            min-height: 75vh;
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+        }
+
+        .hover-lift {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1) !important;
+        }
+
+        .feature-card {
+            border-radius: 1rem;
+        }
+
+        .hero-section {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100" fill="white" opacity="0.1"><polygon points="0,100 1000,0 1000,100"/></svg>');
+            background-size: cover;
+        }
+
+        .stat-item {
+            padding: 2rem 1rem;
+        }
+
+        .display-4 {
+            font-weight: 700;
+        }
+
+        .card {
+            border-radius: 1rem;
+        }
+
+        .btn {
+            border-radius: 0.75rem;
+            font-weight: 500;
+        }
+
+        .btn-lg {
+            border-radius: 1rem;
+        }
+
+        @@media (max-width: 768px) {
+            .display-3 {
+                font-size: 2.5rem;
+            }
+            
+            .hero-content {
+                text-align: center;
+                margin-bottom: 3rem;
+            }
+        }
+
+        .stats-section {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardStats();
+
+            async function loadDashboardStats() {
+                try {
+                    // Carregar estatísticas em paralelo
+                    const [salesResponse, vehiclesResponse, customersResponse] = await Promise.all([
+                        fetch('/api/sales', { credentials: 'same-origin' }).catch(() => null),
+                        fetch('/api/vehicles', { credentials: 'same-origin' }).catch(() => null),
+                        fetch('/api/customers', { credentials: 'same-origin' }).catch(() => null)
+                    ]);
+
+                    // Processar vendas
+                    if (salesResponse && salesResponse.ok) {
+                        const sales = await salesResponse.json();
+                        const totalSales = sales.length;
+                        const totalRevenue = sales.reduce((sum, sale) => sum + (sale.SalePrice || 0), 0);
+                        
+                        document.getElementById('totalSales').textContent = totalSales.toLocaleString('pt-BR');
+                        document.getElementById('totalRevenue').textContent = formatCurrency(totalRevenue);
+                        
+                        animateCounter('totalSales', 0, totalSales, 2000);
+                    } else {
+                        document.getElementById('totalSales').textContent = '0';
+                        document.getElementById('totalRevenue').textContent = 'R$ 0,00';
+                    }
+
+                    // Processar veículos
+                    if (vehiclesResponse && vehiclesResponse.ok) {
+                        const vehicles = await vehiclesResponse.json();
+                        const totalVehicles = vehicles.length;
+                        
+                        document.getElementById('totalVehicles').textContent = totalVehicles.toLocaleString('pt-BR');
+                        animateCounter('totalVehicles', 0, totalVehicles, 2000);
+                    } else {
+                        document.getElementById('totalVehicles').textContent = '0';
+                    }
+
+                    // Processar clientes
+                    if (customersResponse && customersResponse.ok) {
+                        const customers = await customersResponse.json();
+                        const activeCustomers = customers.filter(c => c.IsActive !== false).length;
+                        
+                        document.getElementById('totalCustomers').textContent = activeCustomers.toLocaleString('pt-BR');
+                        animateCounter('totalCustomers', 0, activeCustomers, 2000);
+                    } else {
+                        document.getElementById('totalCustomers').textContent = '0';
+                    }
+
+                } catch (error) {
+                    console.error('Erro ao carregar estatísticas:', error);
+                    // Manter os valores padrão "---" em caso de erro
+                }
+            }
+
+            function animateCounter(elementId, start, end, duration) {
+                const element = document.getElementById(elementId);
+                if (!element || start === end) return;
+
+                const increment = (end - start) / (duration / 16);
+                let current = start;
+
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= end) {
+                        current = end;
+                        clearInterval(timer);
+                    }
+                    element.textContent = Math.floor(current).toLocaleString('pt-BR');
+                }, 16);
+            }
+
+            function formatCurrency(value) {
+                return new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(value || 0);
+            }
+        });
+    </script>
+}

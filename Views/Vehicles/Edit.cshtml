@@ -1,0 +1,373 @@
+@{
+    ViewData["Title"] = "Editar Veículo";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-1"><i class="fas fa-edit text-warning me-2"></i>Editar Veículo</h2>
+                <p class="text-muted mb-0">Atualize as informações do veículo selecionado</p>
+            </div>
+            <div>
+                <a href="/Vehicles" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Voltar à Lista
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading state -->
+    <div id="loadingIndicator" class="text-center my-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+        <p class="mt-3 text-muted">Carregando dados do veículo...</p>
+    </div>
+
+    <div id="editForm" class="row justify-content-center d-none">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0"><i class="fas fa-car me-2"></i>Informações do Veículo</h5>
+                </div>
+                <div class="card-body">
+                    <div id="error-messages" class="alert alert-danger d-none"></div>
+                    <div id="success-message" class="alert alert-success d-none"></div>
+
+                    <form id="formEditarVeiculo">
+                        <input type="hidden" id="vehicleId" />
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input id="model" name="Model" class="form-control" placeholder="Modelo" required />
+                                    <label for="model">Modelo <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input id="year" name="Year" class="form-control" placeholder="Ano" type="number"
+                                        min="1900" max="2030" required />
+                                    <label for="year">Ano <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <select id="manufacturerId" name="ManufacturerId" class="form-select" required>
+                                        <option value="">Selecione o Fabricante</option>
+                                    </select>
+                                    <label for="manufacturerId">Fabricante <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input id="price" name="Price" class="form-control" placeholder="Preço" type="number"
+                                        step="0.01" min="0" required />
+                                    <label for="price">Preço (R$) <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-floating mb-3">
+                                    <select id="type" name="Type" class="form-select" required>
+                                        <option value="">Selecione o tipo</option>
+                                        <option value="1">Carro</option>
+                                        <option value="2">Moto</option>
+                                        <option value="3">Caminhão</option>
+                                        <option value="4">SUV</option>
+                                        <option value="5">Pickup</option>
+                                        <option value="6">Van</option>
+                                    </select>
+                                    <label for="type">Tipo de Veículo <span class="text-danger">*</span></label>
+                                    <div class="invalid-feedback"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <textarea id="description" name="Description" class="form-control" style="height: 120px"
+                                placeholder="Descrição"></textarea>
+                            <label for="description">Descrição</label>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="d-flex justify-content-between pt-3 border-top">
+                            <a href="/Vehicles" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-warning text-dark">
+                                <i class="fas fa-save me-2"></i>Salvar Alterações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.pathname);
+            const vehicleId = window.location.pathname.split('/').pop();
+            
+            if (!vehicleId || vehicleId === 'Edit') {
+                window.location.href = '/Vehicles';
+                return;
+            }
+
+            // Carregar dados iniciais - fabricantes primeiro, depois dados do veículo
+            loadManufacturers()
+                .then(() => loadVehicleData(vehicleId))
+                .then(() => {
+                    document.getElementById('loadingIndicator').classList.add('d-none');
+                    document.getElementById('editForm').classList.remove('d-none');
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar dados:', error);
+                    showError();
+                });
+
+            // Event listener para o formulário
+            const form = document.getElementById('formEditarVeiculo');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    updateVehicle();
+                });
+            }
+
+            async function loadVehicleData(id) {
+                try {
+                    const response = await fetch(`/api/vehicles/${id}`, {
+                        credentials: 'same-origin'
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Veículo não encontrado');
+                    }
+
+                    const vehicle = await response.json();
+                    populateForm(vehicle);
+                } catch (error) {
+                    console.error('Erro ao carregar veículo:', error);
+                    throw error;
+                }
+            }
+
+            async function loadManufacturers() {
+                try {
+                    const response = await fetch('/api/manufacturers', {
+                        credentials: 'same-origin'
+                    });
+
+                    if (response.ok) {
+                        const manufacturers = await response.json();
+                        const select = document.getElementById('manufacturerId');
+                        
+                        manufacturers.forEach(manufacturer => {
+                            const option = document.createElement('option');
+                            option.value = manufacturer.Id;
+                            option.textContent = manufacturer.Name;
+                            select.appendChild(option);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Erro ao carregar fabricantes:', error);
+                }
+            }
+
+            function populateForm(vehicle) {
+                document.getElementById('vehicleId').value = vehicle.Id;
+                document.getElementById('model').value = vehicle.Model || '';
+                document.getElementById('year').value = vehicle.Year || '';
+                document.getElementById('manufacturerId').value = vehicle.ManufacturerId || '';
+                document.getElementById('price').value = vehicle.Price || '';
+                document.getElementById('type').value = vehicle.Type || '';
+                document.getElementById('description').value = vehicle.Description || '';
+            }
+
+            async function updateVehicle() {
+                const id = document.getElementById('vehicleId').value;
+                const data = {
+                    Id: parseInt(id),
+                    ManufacturerId: parseInt(document.getElementById('manufacturerId').value),
+                    Model: document.getElementById('model').value,
+                    Year: parseInt(document.getElementById('year').value),
+                    Price: parseFloat(document.getElementById('price').value),
+                    Type: parseInt(document.getElementById('type').value),
+                    Description: document.getElementById('description').value
+                };
+
+                const errorMessages = document.getElementById('error-messages');
+                const successMessage = document.getElementById('success-message');
+                
+                if (errorMessages) {
+                    errorMessages.classList.add('d-none');
+                    errorMessages.innerHTML = '';
+                }
+                if (successMessage) {
+                    successMessage.classList.add('d-none');
+                    successMessage.textContent = '';
+                }
+                
+                document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+                document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+
+                const submitButton = document.querySelector('button[type="submit"]');
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Salvando...';
+                }
+
+                fetch(`/api/vehicles/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data),
+                    credentials: 'same-origin'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json().then(data => data).catch(() => ({ success: true }));
+                    } else if (response.status === 400) {
+                        return response.json().then(data => {
+                            return Promise.reject({
+                                type: 'validation',
+                                status: 400,
+                                data: data
+                            });
+                        }).catch(() => {
+                            return Promise.reject({
+                                type: 'error',
+                                status: 400,
+                                message: 'Dados inválidos'
+                            });
+                        });
+                    } else if (response.status === 401) {
+                        window.location.href = '/Identity/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
+                        return;
+                    } else if (response.status === 404) {
+                        return Promise.reject({
+                            type: 'error',
+                            status: 404,
+                            message: 'Veículo não encontrado.'
+                        });
+                    } else if (response.status >= 500) {
+                        return Promise.reject({
+                            type: 'error',
+                            status: response.status,
+                            message: 'Erro interno do servidor. Tente novamente mais tarde.'
+                        });
+                    } else {
+                        return Promise.reject({
+                            type: 'error',
+                            status: response.status,
+                            message: `Erro inesperado: ${response.status} ${response.statusText}`
+                        });
+                    }
+                })
+                .then(result => {
+                    const successMessage = document.getElementById('success-message');
+                    if (successMessage) {
+                        const vehicleModel = result.Model || data.Model;
+                        successMessage.innerHTML = `
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Sucesso!</strong> Veículo "${vehicleModel}" foi atualizado com sucesso!
+                            <br><small class="mt-1 d-block">Redirecionando em 3 segundos...</small>
+                        `;
+                        successMessage.classList.remove('d-none');
+                        successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    
+                    setTimeout(() => {
+                        window.location.href = '/Vehicles';
+                    }, 3000);
+                })
+                .catch(error => {
+                    const errorMessages = document.getElementById('error-messages');
+                    if (!errorMessages) return;
+                    
+                    if (error.type === 'validation' && error.data) {
+                        // Primeiro verifica se há uma mensagem de erro específica da API
+                        if (error.data.error) {
+                            errorMessages.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>${error.data.error}`;
+                        }
+                        // Se não há mensagem específica, verifica se há erros de validação por campo
+                        else if (error.data.errors) {
+                            let errorHtml = '<ul class="mb-0">';
+                            for (const field in error.data.errors) {
+                                error.data.errors[field].forEach(msg => {
+                                    errorHtml += `<li><strong>${field}:</strong> ${msg}</li>`;
+                                });
+                                
+                                const fieldElement = document.getElementById(field.toLowerCase());
+                                if (fieldElement) {
+                                    fieldElement.classList.add('is-invalid');
+                                    const feedback = fieldElement.parentElement.querySelector('.invalid-feedback');
+                                    if (feedback) {
+                                        feedback.textContent = error.data.errors[field][0];
+                                    }
+                                }
+                            }
+                            errorHtml += '</ul>';
+                            errorMessages.innerHTML = errorHtml;
+                        }
+                        // Se não há nem mensagem específica nem erros de campo, usa mensagem genérica
+                        else {
+                            errorMessages.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Dados inválidos. Verifique os campos e tente novamente.';
+                        }
+                    } else if (error.type === 'error') {
+                        let iconClass = 'fas fa-exclamation-triangle';
+                        if (error.status >= 500) {
+                            iconClass = 'fas fa-server';
+                        } else if (error.status === 404) {
+                            iconClass = 'fas fa-search';
+                        }
+                        
+                        errorMessages.innerHTML = `<i class="${iconClass} me-2"></i>${error.message}`;
+                    } else {
+                        const message = error.message || 'Erro de conexão. Verifique sua internet e tente novamente.';
+                        errorMessages.innerHTML = `<i class="fas fa-wifi me-2"></i>${message}`;
+                    }
+                    
+                    errorMessages.classList.remove('d-none');
+                    errorMessages.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                })
+                .finally(() => {
+                    const submitButton = document.querySelector('button[type="submit"]');
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<i class="fas fa-save me-2"></i>Salvar Alterações';
+                    }
+                });
+            }
+
+            function showError() {
+                document.getElementById('loadingIndicator').innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                        <h4 class="text-danger">Erro ao carregar dados</h4>
+                        <p class="text-muted">Não foi possível carregar os dados do veículo</p>
+                        <a href="/Vehicles" class="btn btn-primary">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar à Lista
+                        </a>
+                    </div>
+                `;
+            }
+        });
+    </script>
+}

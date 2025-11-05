@@ -1,0 +1,291 @@
+@{
+    ViewData["Title"] = "Editar Cliente";
+    var customerId = ViewContext.RouteData.Values["id"]?.ToString();
+}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1"><i class="fas fa-user-edit text-warning me-2"></i>Editar Cliente</h2>
+            <p class="text-muted mb-0">Atualize as informações do cliente</p>
+        </div>
+        <a asp-action="Index" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-2"></i>Voltar</a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-user me-2"></i>Dados do Cliente</h5>
+                </div>
+                <div class="card-body">
+                    <div id="loading" class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Carregando...</span>
+                        </div>
+                    </div>
+
+                    <div id="customer-form" class="d-none">
+                        <div id="error-messages" class="alert alert-danger d-none"></div>
+                        <div id="success-message" class="alert alert-success d-none"></div>
+
+                        <form id="formEditarCliente">
+                            <input type="hidden" id="customerId" />
+
+                            <div class="form-floating mb-3">
+                                <input id="name" name="Name" class="form-control" placeholder="Nome Completo" required />
+                                <label for="name">Nome Completo</label>
+                                <div class="invalid-feedback"></div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-floating mb-3">
+                                        <input id="cpf" name="CPF" class="form-control" placeholder="CPF" maxlength="14" required />
+                                        <label for="cpf">CPF</label>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-floating mb-3">
+                                        <input id="phone" name="Phone" class="form-control" placeholder="Telefone" required />
+                                        <label for="phone">Telefone</label>
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between mt-4">
+                                <a href="/Customers" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-2"></i>Cancelar
+                                </a>
+                                <button type="submit" class="btn btn-warning text-dark">
+                                    <i class="fas fa-save me-2"></i>Salvar Alterações
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const customerId = '@customerId';
+            
+            $('#cpf').mask('000.000.000-00');
+            $('#phone').mask('(00) 00000-0000');
+
+            loadCustomer(customerId);
+            document.getElementById('formEditarCliente').addEventListener('submit', function(e) {
+                e.preventDefault();
+                updateCustomer();
+            });
+
+            function loadCustomer(id) {
+                fetch(`/api/customers/${id}`, {
+                    credentials: 'same-origin'
+                })
+                .then(response => {
+                    if (response.status === 401) {
+                        window.location.href = '/Identity/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
+                        return;
+                    }
+                    if (response.status === 404) {
+                        throw new Error('Cliente não encontrado');
+                    }
+                    if (!response.ok) {
+                        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(customer => {
+                    document.getElementById('customerId').value = customer.Id || '';
+                    document.getElementById('name').value = customer.Name || '';
+                    document.getElementById('cpf').value = customer.Cpf || '';
+                    document.getElementById('phone').value = customer.Phone || '';
+
+                    document.getElementById('loading').classList.add('d-none');
+                    document.getElementById('customer-form').classList.remove('d-none');
+                })
+                .catch(error => {
+                    document.getElementById('loading').classList.add('d-none');
+                    
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'alert alert-danger text-center';
+                    errorDiv.innerHTML = `
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Erro ao carregar cliente:</strong> ${error.message}
+                        <br><small class="mt-2 d-block">
+                            <a href="/Customers" class="btn btn-outline-danger btn-sm mt-2">
+                                <i class="fas fa-arrow-left me-1"></i>Voltar para Lista
+                            </a>
+                        </small>
+                    `;
+                    
+                    document.querySelector('.card-body').appendChild(errorDiv);
+                });
+            }
+
+            function updateCustomer() {
+                const id = document.getElementById('customerId').value;
+                const data = {
+                    Id: parseInt(id),
+                    Name: document.getElementById('name').value,
+                    CPF: document.getElementById('cpf').value,
+                    Phone: document.getElementById('phone').value
+                };
+
+                const errorMessages = document.getElementById('error-messages');
+                const successMessage = document.getElementById('success-message');
+                
+                if (errorMessages) {
+                    errorMessages.classList.add('d-none');
+                    errorMessages.innerHTML = '';
+                }
+                if (successMessage) {
+                    successMessage.classList.add('d-none');
+                    successMessage.textContent = '';
+                }
+                
+                document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+                document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+                const submitButton = document.querySelector('button[type="submit"]');
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Salvando...';
+                }
+
+                fetch(`/api/customers/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data),
+                    credentials: 'same-origin'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json().then(data => data).catch(() => ({ success: true }));
+                    } else if (response.status === 400) {
+                        return response.json().then(data => {
+                            return Promise.reject({
+                                type: 'validation',
+                                status: 400,
+                                data: data
+                            });
+                        }).catch(() => {
+                            return Promise.reject({
+                                type: 'error',
+                                status: 400,
+                                message: 'Dados inválidos'
+                            });
+                        });
+                    } else if (response.status === 401) {
+                        window.location.href = '/Identity/Account/Login?returnUrl=' + encodeURIComponent(window.location.pathname);
+                        return;
+                    } else if (response.status === 403) {
+                        return Promise.reject({
+                            type: 'error',
+                            status: 403,
+                            message: 'Acesso negado. Você não tem permissão para editar este cliente.'
+                        });
+                    } else if (response.status === 404) {
+                        return Promise.reject({
+                            type: 'error',
+                            status: 404,
+                            message: 'Cliente não encontrado.'
+                        });
+                    } else if (response.status >= 500) {
+                        return Promise.reject({
+                            type: 'error',
+                            status: response.status,
+                            message: 'Erro interno do servidor. Tente novamente mais tarde.'
+                        });
+                    } else {
+                        return Promise.reject({
+                            type: 'error',
+                            status: response.status,
+                            message: `Erro inesperado: ${response.status} ${response.statusText}`
+                        });
+                    }
+                })
+                .then(result => {
+                    const successMessage = document.getElementById('success-message');
+                    if (successMessage) {
+                        const clientName = result.Name || data.Name;
+                        successMessage.innerHTML = `
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Sucesso!</strong> Cliente "${clientName}" foi atualizado com sucesso!
+                            <br><small class="mt-1 d-block">Redirecionando em 3 segundos...</small>
+                        `;
+                        successMessage.classList.remove('d-none');
+                        successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                    
+                    setTimeout(() => {
+                        window.location.href = '/Customers';
+                    }, 3000);
+                })
+                .catch(error => {
+                    const errorMessages = document.getElementById('error-messages');
+                    if (!errorMessages) return;
+                    
+                    if (error.type === 'validation' && error.data) {
+                        if (error.data.errors) {
+                            let errorHtml = '<ul class="mb-0">';
+                            for (const field in error.data.errors) {
+                                error.data.errors[field].forEach(msg => {
+                                    errorHtml += `<li><strong>${field}:</strong> ${msg}</li>`;
+                                });
+                                
+                                const fieldElement = document.getElementById(field.toLowerCase());
+                                if (fieldElement) {
+                                    fieldElement.classList.add('is-invalid');
+                                    const feedback = fieldElement.parentElement.querySelector('.invalid-feedback');
+                                    if (feedback) {
+                                        feedback.textContent = error.data.errors[field][0];
+                                    }
+                                }
+                            }
+                            errorHtml += '</ul>';
+                            errorMessages.innerHTML = errorHtml;
+                        } else if (error.data.error) {
+                            errorMessages.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>${error.data.error}`;
+                        } else {
+                            errorMessages.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Dados inválidos. Verifique os campos e tente novamente.';
+                        }
+                    } else if (error.type === 'error') {
+                        let iconClass = 'fas fa-exclamation-triangle';
+                        if (error.status >= 500) {
+                            iconClass = 'fas fa-server';
+                        } else if (error.status === 403) {
+                            iconClass = 'fas fa-lock';
+                        } else if (error.status === 404) {
+                            iconClass = 'fas fa-search';
+                        }
+                        
+                        errorMessages.innerHTML = `<i class="${iconClass} me-2"></i>${error.message}`;
+                    } else {
+                        const message = error.message || 'Erro de conexão. Verifique sua internet e tente novamente.';
+                        errorMessages.innerHTML = `<i class="fas fa-wifi me-2"></i>${message}`;
+                    }
+                    
+                    errorMessages.classList.remove('d-none');
+                    errorMessages.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                })
+                .finally(() => {
+                    const submitButton = document.querySelector('button[type="submit"]');
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<i class="fas fa-save me-2"></i>Salvar Alterações';
+                    }
+                });
+            }
+        });
+    </script>
+}
